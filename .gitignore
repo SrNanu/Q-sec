@@ -1,0 +1,35 @@
+# --- Entornos Virtuales (CRÍTICO: No subir) ---
+venv/
+.venv/
+env/
+
+# --- Secretos y Variables de Entorno (CRÍTICO) ---
+.env
+.env.local
+# Nota: .env.example SI se sube, .env NO.
+
+# --- Base de Datos e Instancias ---
+instance/
+*.db
+*.sqlite
+*.sqlite3
+# Si tienes datos en la carpeta 'datos' que sean .db, esto ya los ignora
+
+# --- Cache de Python y Tests (Visto en tu foto) ---
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# --- Logs y Errores (Para que no subas archivos de texto con errores) ---
+*.log
+npm-debug.log
+
+# --- IDEs y Editores ---
+.vscode/
+.idea/
+.DS_Store
+
+# --- Artefactos de Build ---
+build/
+dist/
+*.egg-info/
