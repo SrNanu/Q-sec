@@ -1,0 +1,56 @@
+name: TPI
+
+on:
+  push:
+    branches: "main"
+
+  workflow_dispatch:
+
+jobs:
+
+  tpi-test:
+    name: Tests TPI
+
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+
+      - name: Install Dependencies
+        run: |
+          cd TPI
+          pip install -r requirements.txt
+
+      - name: Run TPI Tests
+        run: |
+          cd TPI
+          pytest tests/ -v
+
+
+  style-test:
+    needs: tpi-test
+    name: Verificación de Estilo (Flake8)
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+
+      - name: Install Flake8
+        run: pip install flake8
+
+      - name: Test Style
+        run: flake8 TPI --count --max-complexity=10 --max-line-length=130 --ignore=E266,F401,E402,W293,E303,C901,F821 --statistics --show-source
+
