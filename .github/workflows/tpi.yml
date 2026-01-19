@@ -1,16 +1,14 @@
-name: TPI
+name: CI Pipeline
 
 on:
   push:
-    branches: "main"
-
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
 
-  tpi-test:
-    name: Tests TPI
-
+  unit-tests:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
     
     steps:
@@ -24,19 +22,16 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd TPI
           pip install -r requirements.txt
 
-      - name: Run TPI Tests
+      - name: Run Tests
         run: |
-          cd TPI
           pytest tests/ -v
 
 
   style-test:
-    needs: tpi-test
+    needs: unit-tests
     name: Verificación de Estilo (Flake8)
-
     runs-on: ubuntu-latest
 
     steps:
@@ -52,5 +47,4 @@ jobs:
         run: pip install flake8
 
       - name: Test Style
-        run: flake8 TPI --count --max-complexity=10 --max-line-length=130 --ignore=E266,F401,E402,W293,E303,C901,F821 --statistics --show-source
-
+        run: flake8 . --count --exclude=.git,__pycache__,venv,.venv --max-complexity=10 --max-line-length=130 --ignore=E266,F401,E402,W293,E303,C901,F821 --statistics --show-source
