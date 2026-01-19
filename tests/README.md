@@ -180,7 +180,6 @@ Este directorio contiene la suite completa de tests automatizados para el proyec
 
 ### Ejecutar todos los tests:
 ```bash
-cd TPI
 pytest tests/ -v
 ```
 
@@ -230,4 +229,3 @@ Este proyecto tiene un workflow de GitHub Actions que ejecuta automáticamente:
 1. **Tests** - Valida toda la lógica
 2. **Flake8** - Valida el estilo del código
 
-Ambos deben pasar para que el código se acepte en la rama `TPI`.
