@@ -189,6 +189,3 @@ def simulate_bb84(key_length, has_eve=False):
             'matching_bases': len(matching_bases_indices),
             'message': f'¡Espionaje detectado! QBER demasiado alto: {error_rate:.2%}'
         }
-
-
-# TODO: Integrar esta función en simulation_controller.py

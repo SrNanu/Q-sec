@@ -13,7 +13,8 @@ try:
         generate_random_bits,
         generate_random_bases,
         encode_qubit,
-        measure_qubit
+        measure_qubit,
+        simulate_bb84
     )
     BB84_AVAILABLE = True
 except ImportError as e:
@@ -125,3 +126,62 @@ class TestBB84Simulation:
         assert all(b in [0, 1] for b in alice_bits)
         assert all(b in [0, 1] for b in alice_bases)
         assert all(b in [0, 1] for b in bob_bases)
+
+
+@pytest.mark.skipif(not BB84_AVAILABLE, reason="BB84 simulation no disponible")
+class TestBB84FullProtocol:
+    """
+    Tests de extremo a extremo sobre simulate_bb84(): validan la regla de negocio
+    central del protocolo (detección de espionaje vía QBER), no solo sus piezas sueltas.
+    """
+
+    def test_simulate_bb84_without_eve_yields_secure_key(self):
+        """Sin espía, el canal es ideal: la tasa de error debe ser nula y la clave, segura."""
+        result = simulate_bb84(key_length=256, has_eve=False)
+
+        assert result['success'] is True
+        assert result['result'] == 'secure'
+        assert result['error_rate'] == 0.0
+        assert result['final_key'] is not None
+        assert result['key_length_final'] > 0
+
+    def test_simulate_bb84_without_eve_never_raises_false_alarm(self):
+        """Repetido varias veces, sin espía no debería aparecer nunca un falso positivo."""
+        for _ in range(10):
+            result = simulate_bb84(key_length=128, has_eve=False)
+            assert result['result'] == 'secure'
+            assert result['error_rate'] == 0.0
+
+    def test_simulate_bb84_with_eve_is_usually_detected(self):
+        """
+        Con espía presente, la interceptación-reenvío introduce un QBER promedio del 25%,
+        muy por encima del umbral de seguridad (11%). Sobre 20 corridas independientes,
+        la probabilidad de que el espía pase inadvertido en todas ellas por azar es
+        estadísticamente insignificante (~9% de no detección por corrida individual),
+        por lo que se espera detectarlo en una amplia mayoría de los casos.
+        """
+        n_runs = 20
+        detected = 0
+        for _ in range(n_runs):
+            result = simulate_bb84(key_length=256, has_eve=True)
+            assert result['success'] is True
+            if result['result'] == 'compromised':
+                detected += 1
+
+        detection_rate = detected / n_runs
+        assert detection_rate >= 0.6, (
+            f"Se esperaba detectar al espía en la mayoría de las corridas, "
+            f"pero solo se detectó en {detected}/{n_runs} ({detection_rate:.0%})."
+        )
+
+    def test_simulate_bb84_with_eve_has_higher_error_rate_than_without(self):
+        """La tasa de error promedio con espía debe ser sensiblemente mayor que sin espía."""
+        no_eve_rates = [simulate_bb84(key_length=256, has_eve=False)['error_rate'] for _ in range(5)]
+        eve_rates = [simulate_bb84(key_length=256, has_eve=True)['error_rate'] for _ in range(10)]
+
+        avg_no_eve = sum(no_eve_rates) / len(no_eve_rates)
+        avg_eve = sum(eve_rates) / len(eve_rates)
+
+        assert avg_no_eve == 0.0
+        assert avg_eve > avg_no_eve
+        assert avg_eve > 0.15  # muy por encima del ruido esperado sin intervención
