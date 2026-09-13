@@ -117,6 +117,9 @@ def simulate_bb84(key_length, has_eve=False):
     
     # Paso 3: Transmisión y medición de qubits
     bob_results = []
+    # Lo que midio Eve, para que la animacion muestre lo que paso de verdad
+    eve_bases = []
+    eve_bits = []
     simulator = Aer.get_backend('qasm_simulator')
     
     for i in range(key_length):
@@ -126,6 +129,8 @@ def simulate_bb84(key_length, has_eve=False):
         # Si hay Eve, intercepta
         if has_eve:
             qc, eve_basis, eve_bit = eve_intercept(qc)
+            eve_bases.append(eve_basis)
+            eve_bits.append(eve_bit)
         
         # Bob mide con su base
         qc = measure_qubit(qc, bob_bases[i])
@@ -182,6 +187,15 @@ def simulate_bb84(key_length, has_eve=False):
             'key_length_after_sifting': len(alice_key),
             'key_length_final': len(final_key_bits),
             'matching_bases': len(matching_bases_indices),
+            # Traza del protocolo: la consume la animacion, que antes generaba
+            # estos bits con Math.random() en el navegador
+            'alice_bits': alice_bits,
+            'alice_bases': alice_bases,
+            'bob_bases': bob_bases,
+            'bob_bits': bob_results,
+            'eve_bases': eve_bases,
+            'eve_bits': eve_bits,
+            'matching_indices': matching_bases_indices,
             'message': f'Clave segura generada. QBER: {error_rate:.2%}'
         }
     else:
@@ -194,5 +208,14 @@ def simulate_bb84(key_length, has_eve=False):
             'key_length_after_sifting': len(alice_key),
             'key_length_final': 0,
             'matching_bases': len(matching_bases_indices),
+            # Traza del protocolo: la consume la animacion, que antes generaba
+            # estos bits con Math.random() en el navegador
+            'alice_bits': alice_bits,
+            'alice_bases': alice_bases,
+            'bob_bases': bob_bases,
+            'bob_bits': bob_results,
+            'eve_bases': eve_bases,
+            'eve_bits': eve_bits,
+            'matching_indices': matching_bases_indices,
             'message': f'¡Espionaje detectado! QBER demasiado alto: {error_rate:.2%}'
         }

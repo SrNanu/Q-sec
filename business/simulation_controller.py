@@ -101,6 +101,9 @@ def run_bb84_simulation(user_id, key_length, has_eve):
             'alice_bits': sim_result.get('alice_bits', []),
             'bob_bits': sim_result.get('bob_bits', []),
             'eve_bits': sim_result.get('eve_bits', []),
+            'alice_bases': sim_result.get('alice_bases', []),
+            'bob_bases': sim_result.get('bob_bases', []),
+            'eve_bases': sim_result.get('eve_bases', []),
             'simulation_details': {
                 'key_length_initial': sim_result.get('key_length_initial'),
                 'key_length_after_sifting': sim_result.get('key_length_after_sifting'),

@@ -196,3 +196,43 @@ class TestRegresionClaveCorta:
                 # Puede abortar por falta de bases coincidentes, pero con un
                 # mensaje util y nunca con una excepcion
                 assert 'bases' in result['message'].lower()
+
+
+class TestTrazaDelProtocolo:
+    """
+    simulate_bb84() devuelve lo que realmente ocurrio en cada qubit. La animacion
+    lo dibuja, asi que tiene que ser coherente con el protocolo.
+    """
+
+    def test_devuelve_la_traza_completa(self):
+        result = simulate_bb84(key_length=64, has_eve=False)
+
+        for campo in ('alice_bits', 'alice_bases', 'bob_bases', 'bob_bits'):
+            assert len(result[campo]) == 64, f'{campo} no tiene un valor por qubit'
+            assert all(b in (0, 1) for b in result[campo])
+
+    def test_las_bases_coincidentes_son_las_de_la_clave_tamizada(self):
+        """La longitud de la clave tamizada es consistente con las bases coincidentes."""
+        result = simulate_bb84(key_length=128, has_eve=False)
+
+        esperadas = [i for i in range(128)
+                     if result['alice_bases'][i] == result['bob_bases'][i]]
+        assert result['matching_indices'] == esperadas
+        assert result['key_length_after_sifting'] == len(esperadas)
+
+    def test_sin_espia_bob_mide_lo_que_envio_alice_donde_coinciden_las_bases(self):
+        result = simulate_bb84(key_length=128, has_eve=False)
+
+        for i in result['matching_indices']:
+            assert result['bob_bits'][i] == result['alice_bits'][i]
+
+    def test_sin_espia_no_hay_mediciones_de_eve(self):
+        result = simulate_bb84(key_length=64, has_eve=False)
+        assert result['eve_bits'] == []
+        assert result['eve_bases'] == []
+
+    def test_con_espia_eve_mide_cada_qubit(self):
+        result = simulate_bb84(key_length=64, has_eve=True)
+        assert len(result['eve_bits']) == 64
+        assert len(result['eve_bases']) == 64
+        assert all(b in (0, 1) for b in result['eve_bits'])
