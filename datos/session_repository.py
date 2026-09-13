@@ -42,9 +42,6 @@ def get_session_by_id(session_id):
     """
     Obtiene una sesión por su ID
 
-    Nota: no filtra por usuario. Para lo que se muestra a un usuario concreto
-    usar ``get_user_session``, que sí valida la propiedad.
-
     Args:
         session_id (int): ID de la sesión
 
@@ -54,32 +51,13 @@ def get_session_by_id(session_id):
     return db.session.get(SimulationSession, session_id)
 
 
-def get_user_session(session_id, user_id):
+def get_user_sessions(user_id, limit=None):
     """
-    Obtiene una sesión validando que pertenezca al usuario indicado.
-
-    Evita que un usuario pueda leer las claves de otro cambiando el ID en la URL.
-
-    Args:
-        session_id (int): ID de la sesión
-        user_id (int): ID del usuario que la pide
-
-    Returns:
-        SimulationSession: La sesión si es del usuario, None en cualquier otro caso
-    """
-    return db.session.execute(
-        db.select(SimulationSession).filter_by(id=session_id, user_id=user_id)
-    ).scalar_one_or_none()
-
-
-def get_user_sessions(user_id, limit=None, offset=None):
-    """
-    Obtiene las sesiones de un usuario
+    Obtiene todas las sesiones de un usuario
 
     Args:
         user_id (int): ID del usuario
         limit (int, optional): Límite de resultados
-        offset (int, optional): Desplazamiento, para paginar
 
     Returns:
         list: Lista de sesiones ordenadas por fecha descendente
@@ -90,8 +68,6 @@ def get_user_sessions(user_id, limit=None, offset=None):
         .order_by(SimulationSession.timestamp.desc())
     )
 
-    if offset:
-        query = query.offset(offset)
     if limit:
         query = query.limit(limit)
 
@@ -160,7 +136,8 @@ def count_sessions_by_result(user_id):
         user_id (int): ID del usuario
 
     Returns:
-        dict: {'secure': int, 'compromised': int, ...} con un cero por defecto
+        dict: cantidad de sesiones por resultado, sólo con los resultados que
+            tienen al menos una sesión (por ejemplo {'secure': 3, 'compromised': 1})
     """
     filas = db.session.execute(
         db.select(SimulationSession.result, db.func.count(SimulationSession.id))
@@ -168,25 +145,3 @@ def count_sessions_by_result(user_id):
         .group_by(SimulationSession.result)
     ).all()
     return {resultado: cantidad for resultado, cantidad in filas}
-
-
-def get_error_rates(user_id):
-    """
-    Devuelve los QBER registrados de un usuario, del más viejo al más nuevo.
-
-    Trae sólo la columna necesaria en vez de las entidades completas.
-
-    Args:
-        user_id (int): ID del usuario
-
-    Returns:
-        list: Lista de floats
-    """
-    return [
-        tasa for tasa in db.session.execute(
-            db.select(SimulationSession.error_rate)
-            .filter_by(user_id=user_id)
-            .order_by(SimulationSession.timestamp)
-        ).scalars()
-        if tasa is not None
-    ]
