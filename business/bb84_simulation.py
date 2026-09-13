@@ -145,10 +145,17 @@ def simulate_bb84(key_length, has_eve=False):
     bob_key = [bob_results[i] for i in matching_bases_indices]
     
     # Paso 6: Calcular tasa de error (QBER)
-    if len(alice_key) == 0:
+    # Con menos de 4 bits cribados, el 25% de la muestra da 0 bits y el
+    # calculo de la tasa dividia por cero (pasaba ~1 de cada 3 corridas con
+    # key_length=10, el minimo que acepta el formulario).
+    if len(alice_key) < 4:
         return {
             'success': False,
-            'message': 'No hubo coincidencia de bases suficiente'
+            'message': (
+                f'Coincidieron sólo {len(alice_key)} bases de {key_length} qubits: '
+                'hacen falta al menos 4 bits cribados para estimar el error. '
+                'Probá con una longitud de clave mayor.'
+            )
         }
     
     # Comparar una muestra para detectar espionaje

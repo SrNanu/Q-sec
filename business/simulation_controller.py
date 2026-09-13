@@ -25,27 +25,22 @@ def get_user_statistics(user_id):
     """
     Obtiene estadísticas de las simulaciones de un usuario
     Regla de negocio: Calcula métricas agregadas
-    
+
+    El conteo se resuelve en SQL en vez de traer todas las filas del usuario a
+    memoria sólo para contarlas.
+
     Args:
         user_id (int): ID del usuario
-    
+
     Returns:
         dict: Estadísticas del usuario
     """
-    sessions = session_repository.get_user_sessions(user_id)
-    
-    if not sessions:
-        return {
-            'total_simulations': 0,
-            'secure_simulations': 0,
-            'compromised_simulations': 0,
-            'success_rate': 0.0
-        }
-    
-    total = len(sessions)
-    secure = sum(1 for s in sessions if s.result == 'secure')
-    compromised = total - secure
-    
+    por_resultado = session_repository.count_sessions_by_result(user_id)
+
+    secure = por_resultado.get('secure', 0)
+    compromised = por_resultado.get('compromised', 0)
+    total = sum(por_resultado.values())
+
     return {
         'total_simulations': total,
         'secure_simulations': secure,

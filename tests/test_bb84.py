@@ -8,19 +8,17 @@ import os
 # Agregar el directorio TPI al path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-try:
-    from business.bb84_simulation import (
-        generate_random_bits,
-        generate_random_bases,
-        encode_qubit,
-        measure_qubit,
-        simulate_bb84
-    )
-    BB84_AVAILABLE = True
-except ImportError as e:
-    # Si hay incompatibilidad de versiones, saltamos estos tests
-    BB84_AVAILABLE = False
-    pytestmark = pytest.mark.skip(reason=f"BB84 simulation no disponible: {e}")
+# Sin try/except: si el modulo no se puede importar, la suite tiene que fallar.
+# Antes un ImportError salteaba estos tests en silencio y el CI quedaba en verde
+# aunque la capa de simulacion estuviera rota.
+from business.bb84_simulation import (
+    generate_random_bits,
+    generate_random_bases,
+    encode_qubit,
+    measure_qubit,
+    simulate_bb84
+)
+BB84_AVAILABLE = True
 
 
 @pytest.mark.skipif(not BB84_AVAILABLE, reason="BB84 simulation no disponible")
@@ -185,3 +183,16 @@ class TestBB84FullProtocol:
         assert avg_no_eve == 0.0
         assert avg_eve > avg_no_eve
         assert avg_eve > 0.15  # muy por encima del ruido esperado sin intervención
+
+
+class TestRegresionClaveCorta:
+    """Con pocas bases coincidentes el calculo del QBER dividia por cero."""
+
+    def test_key_length_minimo_nunca_explota(self):
+        """key_length=10 es el minimo que acepta el formulario y fallaba ~1 de cada 3 veces."""
+        for _ in range(60):
+            result = simulate_bb84(key_length=10, has_eve=False)
+            if not result['success']:
+                # Puede abortar por falta de bases coincidentes, pero con un
+                # mensaje util y nunca con una excepcion
+                assert 'bases' in result['message'].lower()
