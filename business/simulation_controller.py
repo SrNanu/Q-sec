@@ -91,7 +91,9 @@ def run_bb84_simulation(user_id, key_length, has_eve):
             has_eve=has_eve,
             result=sim_result['result'],
             final_key=sim_result.get('final_key'),
-            error_rate=sim_result.get('error_rate')
+            error_rate=sim_result.get('error_rate'),
+            sifted_length=sim_result.get('key_length_after_sifting'),
+            sample_size=sim_result.get('sample_size')
         )
         
         return {
@@ -109,6 +111,7 @@ def run_bb84_simulation(user_id, key_length, has_eve):
                 'key_length_after_sifting': sim_result.get('key_length_after_sifting'),
                 'key_length_final': sim_result.get('key_length_final'),
                 'matching_bases': sim_result.get('matching_bases'),
+                'sample_size': sim_result.get('sample_size'),
                 'error_rate': sim_result.get('error_rate')
             }
         }

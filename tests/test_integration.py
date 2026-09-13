@@ -114,3 +114,25 @@ class TestBB84Integration:
         assert saved_session is not None
         assert saved_session.result == 'compromised'
         assert saved_session.final_key == '10101010'
+
+
+class TestResultadosIntermediosPersistidos:
+    """Cada sesion guarda los bits de la clave tamizada y el tamaño de la muestra."""
+
+    def test_la_sesion_guarda_los_resultados_intermedios(self, app):
+        from business import simulation_controller
+
+        user = User(username='persistidor')
+        user.set_password('password123')
+        db.session.add(user)
+        db.session.commit()
+
+        resultado = simulation_controller.run_bb84_simulation(user.id, 128, False)
+        assert resultado['success'] is True
+
+        guardada = db.session.get(SimulationSession, resultado['session']['id'])
+        detalles = resultado['simulation_details']
+        assert guardada.sifted_length == detalles['key_length_after_sifting']
+        assert guardada.sample_size == detalles['sample_size']
+        assert guardada.sample_size == min(guardada.sifted_length // 4, 20)
+        assert resultado['session']['sample_size'] == guardada.sample_size

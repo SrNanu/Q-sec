@@ -74,6 +74,8 @@ class TestBaseExistente:
         with app.app_context():
             columnas = {c['name'] for c in inspect(db.engine).get_columns('user')}
             assert 'created_at' in columnas
+            columnas = {c['name'] for c in inspect(db.engine).get_columns('simulation_session')}
+            assert {'sifted_length', 'sample_size'} <= columnas
 
     def test_los_datos_existentes_se_conservan(self, tmp_path):
         ruta = tmp_path / 'qsec.db'

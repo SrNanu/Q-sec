@@ -185,6 +185,7 @@ def simulate_bb84(key_length, has_eve=False):
             'error_rate': error_rate,
             'key_length_initial': key_length,
             'key_length_after_sifting': len(alice_key),
+            'sample_size': sample_size,
             'key_length_final': len(final_key_bits),
             'matching_bases': len(matching_bases_indices),
             # Traza del protocolo: la consume la animacion, que antes generaba
@@ -206,6 +207,7 @@ def simulate_bb84(key_length, has_eve=False):
             'error_rate': error_rate,
             'key_length_initial': key_length,
             'key_length_after_sifting': len(alice_key),
+            'sample_size': sample_size,
             'key_length_final': 0,
             'matching_bases': len(matching_bases_indices),
             # Traza del protocolo: la consume la animacion, que antes generaba

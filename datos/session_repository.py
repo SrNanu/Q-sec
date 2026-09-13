@@ -5,7 +5,8 @@ Contiene todas las operaciones de acceso a datos relacionadas con sesiones
 from datos.models import SimulationSession, db
 
 
-def create_session(user_id, key_length, has_eve, result, final_key=None, error_rate=None):
+def create_session(user_id, key_length, has_eve, result, final_key=None, error_rate=None,
+                   sifted_length=None, sample_size=None):
     """
     Crea una nueva sesión de simulación en la base de datos
 
@@ -16,6 +17,8 @@ def create_session(user_id, key_length, has_eve, result, final_key=None, error_r
         result (str): Resultado de la simulación ('secure' o 'compromised')
         final_key (str, optional): La clave final generada
         error_rate (float, optional): Tasa de error cuántico
+        sifted_length (int, optional): Bits de la clave tamizada
+        sample_size (int, optional): Bits usados para estimar el QBER
 
     Returns:
         SimulationSession: La sesión creada
@@ -26,7 +29,9 @@ def create_session(user_id, key_length, has_eve, result, final_key=None, error_r
         has_eve=has_eve,
         result=result,
         final_key=final_key,
-        error_rate=error_rate
+        error_rate=error_rate,
+        sifted_length=sifted_length,
+        sample_size=sample_size
     )
     db.session.add(session)
     db.session.commit()

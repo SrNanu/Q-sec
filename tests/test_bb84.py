@@ -236,3 +236,18 @@ class TestTrazaDelProtocolo:
         assert len(result['eve_bits']) == 64
         assert len(result['eve_bases']) == 64
         assert all(b in (0, 1) for b in result['eve_bits'])
+
+
+class TestResultadosIntermedios:
+    """La muestra para el QBER es el 25% de la clave tamizada, con un maximo de 20 bits."""
+
+    def test_el_tamano_de_la_muestra_sigue_la_regla(self):
+        for _ in range(5):
+            result = simulate_bb84(key_length=256, has_eve=False)
+            assert result['sample_size'] == min(result['key_length_after_sifting'] // 4, 20)
+
+    def test_los_bits_de_la_muestra_se_descartan_de_la_clave_final(self):
+        result = simulate_bb84(key_length=256, has_eve=False)
+        assert result['result'] == 'secure'
+        assert result['key_length_final'] == \
+            result['key_length_after_sifting'] - result['sample_size']

@@ -69,6 +69,11 @@ class SimulationSession(db.Model):
     error_rate = db.Column(db.Float, nullable=True)
     timestamp = db.Column(db.DateTime, nullable=False, default=utc_now, index=True)
 
+    # Resultados intermedios del protocolo. Las sesiones anteriores a estas
+    # columnas las tienen vacias.
+    sifted_length = db.Column(db.Integer, nullable=True)  # bits de la clave tamizada
+    sample_size = db.Column(db.Integer, nullable=True)    # bits usados para estimar el QBER
+
     # Foreign Key
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
@@ -85,5 +90,7 @@ class SimulationSession(db.Model):
             'final_key': self.final_key,
             'error_rate': self.error_rate,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            'sifted_length': self.sifted_length,
+            'sample_size': self.sample_size,
             'user_id': self.user_id
         }
