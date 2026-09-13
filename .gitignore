@@ -33,3 +33,5 @@ npm-debug.log
 build/
 dist/
 *.egg-info/
+# Journal de SQLite (lo genera la base al escribir; no se versiona)
+*.db-journal

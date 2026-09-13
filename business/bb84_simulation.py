@@ -117,6 +117,9 @@ def simulate_bb84(key_length, has_eve=False):
     
     # Paso 3: Transmisión y medición de qubits
     bob_results = []
+    # Lo que midio Eve, para que la animacion muestre lo que paso de verdad
+    eve_bases = []
+    eve_bits = []
     simulator = Aer.get_backend('qasm_simulator')
     
     for i in range(key_length):
@@ -126,6 +129,8 @@ def simulate_bb84(key_length, has_eve=False):
         # Si hay Eve, intercepta
         if has_eve:
             qc, eve_basis, eve_bit = eve_intercept(qc)
+            eve_bases.append(eve_basis)
+            eve_bits.append(eve_bit)
         
         # Bob mide con su base
         qc = measure_qubit(qc, bob_bases[i])
@@ -145,10 +150,17 @@ def simulate_bb84(key_length, has_eve=False):
     bob_key = [bob_results[i] for i in matching_bases_indices]
     
     # Paso 6: Calcular tasa de error (QBER)
-    if len(alice_key) == 0:
+    # Con menos de 4 bits cribados, el 25% de la muestra da 0 bits y el
+    # calculo de la tasa dividia por cero (pasaba ~1 de cada 3 corridas con
+    # key_length=10, el minimo que acepta el formulario).
+    if len(alice_key) < 4:
         return {
             'success': False,
-            'message': 'No hubo coincidencia de bases suficiente'
+            'message': (
+                f'Coincidieron sólo {len(alice_key)} bases de {key_length} qubits: '
+                'hacen falta al menos 4 bits cribados para estimar el error. '
+                'Probá con una longitud de clave mayor.'
+            )
         }
     
     # Comparar una muestra para detectar espionaje
@@ -173,8 +185,18 @@ def simulate_bb84(key_length, has_eve=False):
             'error_rate': error_rate,
             'key_length_initial': key_length,
             'key_length_after_sifting': len(alice_key),
+            'sample_size': sample_size,
             'key_length_final': len(final_key_bits),
             'matching_bases': len(matching_bases_indices),
+            # Traza del protocolo: la consume la animacion, que antes generaba
+            # estos bits con Math.random() en el navegador
+            'alice_bits': alice_bits,
+            'alice_bases': alice_bases,
+            'bob_bases': bob_bases,
+            'bob_bits': bob_results,
+            'eve_bases': eve_bases,
+            'eve_bits': eve_bits,
+            'matching_indices': matching_bases_indices,
             'message': f'Clave segura generada. QBER: {error_rate:.2%}'
         }
     else:
@@ -185,7 +207,17 @@ def simulate_bb84(key_length, has_eve=False):
             'error_rate': error_rate,
             'key_length_initial': key_length,
             'key_length_after_sifting': len(alice_key),
+            'sample_size': sample_size,
             'key_length_final': 0,
             'matching_bases': len(matching_bases_indices),
+            # Traza del protocolo: la consume la animacion, que antes generaba
+            # estos bits con Math.random() en el navegador
+            'alice_bits': alice_bits,
+            'alice_bases': alice_bases,
+            'bob_bases': bob_bases,
+            'bob_bits': bob_results,
+            'eve_bases': eve_bases,
+            'eve_bits': eve_bits,
+            'matching_indices': matching_bases_indices,
             'message': f'¡Espionaje detectado! QBER demasiado alto: {error_rate:.2%}'
         }

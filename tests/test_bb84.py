@@ -8,19 +8,17 @@ import os
 # Agregar el directorio TPI al path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-try:
-    from business.bb84_simulation import (
-        generate_random_bits,
-        generate_random_bases,
-        encode_qubit,
-        measure_qubit,
-        simulate_bb84
-    )
-    BB84_AVAILABLE = True
-except ImportError as e:
-    # Si hay incompatibilidad de versiones, saltamos estos tests
-    BB84_AVAILABLE = False
-    pytestmark = pytest.mark.skip(reason=f"BB84 simulation no disponible: {e}")
+# Sin try/except: si el modulo no se puede importar, la suite tiene que fallar.
+# Antes un ImportError salteaba estos tests en silencio y el CI quedaba en verde
+# aunque la capa de simulacion estuviera rota.
+from business.bb84_simulation import (
+    generate_random_bits,
+    generate_random_bases,
+    encode_qubit,
+    measure_qubit,
+    simulate_bb84
+)
+BB84_AVAILABLE = True
 
 
 @pytest.mark.skipif(not BB84_AVAILABLE, reason="BB84 simulation no disponible")
@@ -185,3 +183,71 @@ class TestBB84FullProtocol:
         assert avg_no_eve == 0.0
         assert avg_eve > avg_no_eve
         assert avg_eve > 0.15  # muy por encima del ruido esperado sin intervención
+
+
+class TestRegresionClaveCorta:
+    """Con pocas bases coincidentes el calculo del QBER dividia por cero."""
+
+    def test_key_length_minimo_nunca_explota(self):
+        """key_length=10 es el minimo que acepta el formulario y fallaba ~1 de cada 3 veces."""
+        for _ in range(60):
+            result = simulate_bb84(key_length=10, has_eve=False)
+            if not result['success']:
+                # Puede abortar por falta de bases coincidentes, pero con un
+                # mensaje util y nunca con una excepcion
+                assert 'bases' in result['message'].lower()
+
+
+class TestTrazaDelProtocolo:
+    """
+    simulate_bb84() devuelve lo que realmente ocurrio en cada qubit. La animacion
+    lo dibuja, asi que tiene que ser coherente con el protocolo.
+    """
+
+    def test_devuelve_la_traza_completa(self):
+        result = simulate_bb84(key_length=64, has_eve=False)
+
+        for campo in ('alice_bits', 'alice_bases', 'bob_bases', 'bob_bits'):
+            assert len(result[campo]) == 64, f'{campo} no tiene un valor por qubit'
+            assert all(b in (0, 1) for b in result[campo])
+
+    def test_las_bases_coincidentes_son_las_de_la_clave_tamizada(self):
+        """La longitud de la clave tamizada es consistente con las bases coincidentes."""
+        result = simulate_bb84(key_length=128, has_eve=False)
+
+        esperadas = [i for i in range(128)
+                     if result['alice_bases'][i] == result['bob_bases'][i]]
+        assert result['matching_indices'] == esperadas
+        assert result['key_length_after_sifting'] == len(esperadas)
+
+    def test_sin_espia_bob_mide_lo_que_envio_alice_donde_coinciden_las_bases(self):
+        result = simulate_bb84(key_length=128, has_eve=False)
+
+        for i in result['matching_indices']:
+            assert result['bob_bits'][i] == result['alice_bits'][i]
+
+    def test_sin_espia_no_hay_mediciones_de_eve(self):
+        result = simulate_bb84(key_length=64, has_eve=False)
+        assert result['eve_bits'] == []
+        assert result['eve_bases'] == []
+
+    def test_con_espia_eve_mide_cada_qubit(self):
+        result = simulate_bb84(key_length=64, has_eve=True)
+        assert len(result['eve_bits']) == 64
+        assert len(result['eve_bases']) == 64
+        assert all(b in (0, 1) for b in result['eve_bits'])
+
+
+class TestResultadosIntermedios:
+    """La muestra para el QBER es el 25% de la clave tamizada, con un maximo de 20 bits."""
+
+    def test_el_tamano_de_la_muestra_sigue_la_regla(self):
+        for _ in range(5):
+            result = simulate_bb84(key_length=256, has_eve=False)
+            assert result['sample_size'] == min(result['key_length_after_sifting'] // 4, 20)
+
+    def test_los_bits_de_la_muestra_se_descartan_de_la_clave_final(self):
+        result = simulate_bb84(key_length=256, has_eve=False)
+        assert result['result'] == 'secure'
+        assert result['key_length_final'] == \
+            result['key_length_after_sifting'] - result['sample_size']

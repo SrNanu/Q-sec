@@ -135,7 +135,7 @@ Este directorio contiene la suite completa de tests automatizados para el proyec
 
 **Propósito:** Validar las funciones de generación aleatoria y simulación cuántica.
 
-**⚠️ Nota:** Estos tests están configurados para **saltarse automáticamente** si hay incompatibilidad de versiones con `qiskit-aer`.
+**Nota:** Estos tests **no** se saltean si falla la importación de `qiskit-aer`: un error de importación hace fallar la suite, para que un problema real no quede oculto detrás de un CI en verde.
 
 #### Tests incluidos:
 
@@ -174,6 +174,57 @@ Este directorio contiene la suite completa de tests automatizados para el proyec
   - **¿Por qué?** Validar la lógica completa del protocolo
   - **¿Cuándo falla?** Si hay error en la implementación del protocolo
 
+- **`TestBB84FullProtocol`** (4 tests)
+  - **¿Qué hace?** Ejecuta `simulate_bb84()` de punta a punta, con y sin espía
+  - **¿Por qué?** Valida la regla de negocio central: sin espía el QBER es 0 y la clave es segura; con espía el QBER sube y se detecta
+  - **¿Cuándo falla?** Si la detección de espionaje deja de funcionar
+
+- **`TestRegresionClaveCorta::test_key_length_minimo_nunca_explota`**
+  - **¿Qué hace?** Corre 60 simulaciones con `key_length=10`, el mínimo del formulario
+  - **¿Por qué?** Con menos de 4 bits tamizados el cálculo del QBER dividía por cero
+  - **¿Cuándo falla?** Si vuelve a aparecer la excepción
+
+- **`TestTrazaDelProtocolo`** (5 tests)
+  - **¿Qué hace?** Verifica los bits y bases que devuelve la simulación
+  - **¿Por qué?** La animación los dibuja: la clave tamizada tiene que corresponder a las bases coincidentes, sin espía Bob tiene que medir lo que envió Alice, y con espía Eve mide cada qubit
+  - **¿Cuándo falla?** Si la traza deja de ser coherente con el protocolo
+
+- **`TestResultadosIntermedios`** (2 tests)
+  - **¿Qué hace?** Verifica el tamaño de la muestra usada para el QBER
+  - **¿Por qué?** Es el 25% de la clave tamizada con un máximo de 20 bits, y esos bits se descartan de la clave final
+  - **¿Cuándo falla?** Si cambia la regla de la muestra
+
+---
+
+### 5. **test_config.py** - Tests de Configuración
+
+**Propósito:** Validar la configuración por entorno y la construcción de la aplicación.
+
+- Producción no arranca con la `SECRET_KEY` de desarrollo
+- Las URL `postgres://` que entregan Render y Heroku se corrigen a `postgresql://`
+- La factory `create_app()` registra todas las rutas
+- Ningún test usa la instancia global de la app, que apunta a `qsec.db`
+
+---
+
+### 6. **test_esquema.py** - Tests de Actualización del Esquema
+
+**Propósito:** Simular a alguien que ya tenía un `qsec.db` creado y actualiza el código.
+
+- Al arrancar, la app agrega las columnas nuevas que le falten a la base
+- Los usuarios y sesiones existentes se conservan y el login sigue funcionando
+- Arrancar de nuevo no vuelve a modificar nada
+
+---
+
+### 7. **test_animacion.py** - Tests de los Datos de la Animación
+
+**Propósito:** Verificar que la animación recibe los datos reales de la simulación.
+
+- `/api/run-simulation` devuelve los bits y bases de Alice, Bob y Eve
+- Sin espía, los bits de Bob coinciden con los de Alice donde coinciden las bases
+- La página de la animación ya no genera bits con `Math.random()`
+
 ---
 
 ## 🚀 Cómo ejecutar los tests
@@ -206,18 +257,21 @@ pytest tests/ -v --cov=app --cov=business --cov=datos --cov=views
 - **Autenticación:** ✅ Registrado
 - **Rutas:** ✅ Básico
 - **Formularios:** ✅ Básico
-- **Protocolo BB84:** ⏭️ Skipped (por compatibilidad de versiones)
+- **Protocolo BB84:** ✅ Protocolo completo, traza y resultados intermedios
+- **Datos de la animación:** ✅ La API entrega los bits reales
+- **Bases existentes:** ✅ Actualización automática del esquema
 
 ---
 
-## 🔍 Fixture Principal: `client`
+## 🔍 Fixtures principales: `app` y `client`
 
-Todos los tests usan la fixture `client` que:
-1. Crea una app de Flask en modo testing
-2. Crea una BD SQLite en memoria (no persiste)
-3. Crea todas las tablas automáticamente
-4. Retorna un cliente para hacer requests
-5. Limpia todo después del test
+Están definidas una sola vez en `tests/conftest.py` y todos los tests las comparten:
+1. `app` construye la aplicación con `create_app(TestingConfig)` y una BD SQLite en memoria
+2. Antes de crear tablas verifica que la base no apunte a `qsec.db`
+3. Crea todas las tablas y las borra al terminar cada test
+4. `client` devuelve un cliente para hacer requests sobre esa app
+
+> Antes cada archivo tenía su propia fixture y cambiaba la base a `:memory:` después de importar la app, cuando la conexión ya estaba ligada a `qsec.db`: correr la suite borraba la base de desarrollo.
 
 Esto garantiza que cada test es independiente y no afecta a otros.
 
@@ -228,4 +282,6 @@ Esto garantiza que cada test es independiente y no afecta a otros.
 Este proyecto tiene un workflow de GitHub Actions que ejecuta automáticamente:
 1. **Tests** - Valida toda la lógica
 2. **Flake8** - Valida el estilo del código
+
+Corre en cada push a `main` y en cada pull request contra `main`.
 

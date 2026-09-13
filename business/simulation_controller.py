@@ -25,27 +25,22 @@ def get_user_statistics(user_id):
     """
     Obtiene estadísticas de las simulaciones de un usuario
     Regla de negocio: Calcula métricas agregadas
-    
+
+    El conteo se resuelve en SQL en vez de traer todas las filas del usuario a
+    memoria sólo para contarlas.
+
     Args:
         user_id (int): ID del usuario
-    
+
     Returns:
         dict: Estadísticas del usuario
     """
-    sessions = session_repository.get_user_sessions(user_id)
-    
-    if not sessions:
-        return {
-            'total_simulations': 0,
-            'secure_simulations': 0,
-            'compromised_simulations': 0,
-            'success_rate': 0.0
-        }
-    
-    total = len(sessions)
-    secure = sum(1 for s in sessions if s.result == 'secure')
-    compromised = total - secure
-    
+    por_resultado = session_repository.count_sessions_by_result(user_id)
+
+    secure = por_resultado.get('secure', 0)
+    compromised = por_resultado.get('compromised', 0)
+    total = sum(por_resultado.values())
+
     return {
         'total_simulations': total,
         'secure_simulations': secure,
@@ -96,7 +91,9 @@ def run_bb84_simulation(user_id, key_length, has_eve):
             has_eve=has_eve,
             result=sim_result['result'],
             final_key=sim_result.get('final_key'),
-            error_rate=sim_result.get('error_rate')
+            error_rate=sim_result.get('error_rate'),
+            sifted_length=sim_result.get('key_length_after_sifting'),
+            sample_size=sim_result.get('sample_size')
         )
         
         return {
@@ -106,11 +103,15 @@ def run_bb84_simulation(user_id, key_length, has_eve):
             'alice_bits': sim_result.get('alice_bits', []),
             'bob_bits': sim_result.get('bob_bits', []),
             'eve_bits': sim_result.get('eve_bits', []),
+            'alice_bases': sim_result.get('alice_bases', []),
+            'bob_bases': sim_result.get('bob_bases', []),
+            'eve_bases': sim_result.get('eve_bases', []),
             'simulation_details': {
                 'key_length_initial': sim_result.get('key_length_initial'),
                 'key_length_after_sifting': sim_result.get('key_length_after_sifting'),
                 'key_length_final': sim_result.get('key_length_final'),
                 'matching_bases': sim_result.get('matching_bases'),
+                'sample_size': sim_result.get('sample_size'),
                 'error_rate': sim_result.get('error_rate')
             }
         }

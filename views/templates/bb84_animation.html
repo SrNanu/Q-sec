@@ -150,16 +150,10 @@
 </div>
 
 <script>
-// Prevenir que se repita la animación si se recarga la página
+// Evita que la animación se dispare dos veces en la misma carga.
+// (Antes había acá un handler de 'beforeunload' que asignaba location.href:
+// durante beforeunload esa asignación no navega a ningún lado, sólo estorbaba.)
 let animationStarted = false;
-
-// Verificar si ya se ejecutó la animación
-window.addEventListener('beforeunload', function() {
-    if (animationStarted) {
-        // Redirigir al dashboard si se recarga durante la animación
-        window.location.href = '{{ url_for("dashboard") }}';
-    }
-});
 
 document.addEventListener('DOMContentLoaded', function() {
     runBB84Animation();
@@ -222,9 +216,9 @@ async function runBB84Animation() {
         }
         
         // Animar los pasos con datos del backend
-        await animateStep1();
-        await animateStep2(hasEve);
-        await animateStep3();
+        await animateStep1(data);
+        await animateStep2(hasEve, data);
+        await animateStep3(data);
         await animateStep4(data);
         await animateStep5(data);
         await animateStep6(data);
@@ -264,7 +258,7 @@ function showSpyAlert(data) {
     spyAlert.classList.add('shake-animation');
 }
 
-async function animateStep1() {
+async function animateStep1(data) {
     const step = document.getElementById('step1');
     const progressBar = document.getElementById('progress1');
     const aliceBitsDisplay = document.getElementById('alice-bits-display');
@@ -272,14 +266,15 @@ async function animateStep1() {
     step.style.opacity = '1';
     aliceBitsDisplay.innerHTML = '';
     
-    // Animar generación de bits aleatorios
-    const displayCount = 16;
+    // Bits reales que genero Alice (antes se inventaban con Math.random)
+    const displayCount = Math.min(16, (data.alice_bits || []).length);
     for (let i = 0; i < displayCount; i++) {
         await new Promise(resolve => setTimeout(resolve, 60));
         
-        const bit = Math.floor(Math.random() * 2);
+        const bit = data.alice_bits[i];
+        const titulo = 'bit ' + bit + ' en base ' + (data.alice_bases[i] === 1 ? '×' : '+');
         const bgColor = bit === 1 ? '#28a745' : '#dc3545'; // Verde para 1, Rojo para 0
-        aliceBitsDisplay.innerHTML += `<span class="bit-square" style="display: inline-block; width: 32px; height: 32px; background: ${bgColor}; border-radius: 6px; line-height: 32px; text-align: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${bit}</span>`;
+        aliceBitsDisplay.innerHTML += `<span class="bit-square" title="${titulo}" style="display: inline-block; width: 32px; height: 32px; background: ${bgColor}; border-radius: 6px; line-height: 32px; text-align: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${bit}</span>`;
         
         progressBar.style.width = ((i + 1) / displayCount * 100) + '%';
     }
@@ -287,7 +282,7 @@ async function animateStep1() {
     await new Promise(resolve => setTimeout(resolve, 500));
 }
 
-async function animateStep2(hasEve) {
+async function animateStep2(hasEve, data) {
     const step = document.getElementById('step2');
     const eveSection = document.getElementById('eve-section');
     const eveBitsDisplay = document.getElementById('eve-bits-display');
@@ -313,7 +308,8 @@ async function animateStep2(hasEve) {
         
         // Si Eve está habilitada, algunos fotones serán interceptados
         let intercepted = false;
-        if (hasEve && Math.random() < 0.6) { // 60% de probabilidad de intercepción
+        // El espia del simulador intercepta cada qubit (ver bb84_simulation.py)
+        if (hasEve && i < (data.eve_bits || []).length) {
             intercepted = true;
             photon.setAttribute('data-intercepted', 'true');
         }
@@ -328,14 +324,15 @@ async function animateStep2(hasEve) {
     if (hasEve) {
         eveSection.style.display = 'block';
         
-        // Animar bits de Eve
-        const displayCount = 8;
+        // Bits reales que midio Eve al interceptar
+        const displayCount = Math.min(8, (data.eve_bits || []).length);
         eveBitsDisplay.innerHTML = '';
         for (let i = 0; i < displayCount; i++) {
             await new Promise(resolve => setTimeout(resolve, 120));
-            const bit = Math.floor(Math.random() * 2);
+            const bit = data.eve_bits[i];
+            const titulo = 'Eve midio ' + bit + ' en base ' + (data.eve_bases[i] === 1 ? '×' : '+');
             const bgColor = '#8b0000'; // Rojo oscuro para Eve
-            eveBitsDisplay.innerHTML += `<span class="bit-square" style="display: inline-block; width: 32px; height: 32px; background: ${bgColor}; border-radius: 6px; line-height: 32px; text-align: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${bit}</span>`;
+            eveBitsDisplay.innerHTML += `<span class="bit-square" title="${titulo}" style="display: inline-block; width: 32px; height: 32px; background: ${bgColor}; border-radius: 6px; line-height: 32px; text-align: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${bit}</span>`;
         }
     } else {
         eveSection.style.display = 'none';
@@ -393,20 +390,21 @@ function animatePhoton(photon, width, duration, intercepted) {
     });
 }
 
-async function animateStep3() {
+async function animateStep3(data) {
     const step = document.getElementById('step3');
     const bobBitsDisplay = document.getElementById('bob-bits-display');
     
     step.style.opacity = '1';
     bobBitsDisplay.innerHTML = '';
     
-    // Animar medición de Bob
-    const displayCount = 16;
+    // Resultados reales de las mediciones de Bob
+    const displayCount = Math.min(16, (data.bob_bits || []).length);
     for (let i = 0; i < displayCount; i++) {
         await new Promise(resolve => setTimeout(resolve, 60));
-        const bit = Math.floor(Math.random() * 2);
+        const bit = data.bob_bits[i];
+        const titulo = 'Bob midio ' + bit + ' en base ' + (data.bob_bases[i] === 1 ? '×' : '+');
         const bgColor = bit === 1 ? '#0077be' : '#ffc107'; // Azul para 1, Amarillo para 0
-        bobBitsDisplay.innerHTML += `<span class="bit-square" style="display: inline-block; width: 32px; height: 32px; background: ${bgColor}; border-radius: 6px; line-height: 32px; text-align: center; color: ${bit === 1 ? 'white' : 'black'}; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${bit}</span>`;
+        bobBitsDisplay.innerHTML += `<span class="bit-square" title="${titulo}" style="display: inline-block; width: 32px; height: 32px; background: ${bgColor}; border-radius: 6px; line-height: 32px; text-align: center; color: ${bit === 1 ? 'white' : 'black'}; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${bit}</span>`;
     }
     
     await new Promise(resolve => setTimeout(resolve, 500));
