@@ -1,103 +1,191 @@
 <div align="center">
 
-# 🔐 Q-Sec: Simulador Interactivo BB84
+# 🔐 Q-Sec: Interactive BB84 Quantum Key Distribution Simulator
 
-### *Criptografía Cuántica al Alcance de Todos*
+### *Information-Theoretically Secure Quantum Communications, Channel Decoherence & Asymptotic Key Rate Estimation*
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![Flask](https://img.shields.io/badge/Flask-3.1.2-green.svg)](https://flask.palletsprojects.com/)
-[![Qiskit](https://img.shields.io/badge/Qiskit-2.2.0-purple.svg)](https://qiskit.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-Pytest-red.svg)](tests/)
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.1.2-000000.svg?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![Qiskit](https://img.shields.io/badge/Qiskit-2.2.0-6929C4.svg?logo=qiskit&logoColor=white)](https://qiskit.org/)
+[![Qiskit-Aer](https://img.shields.io/badge/Qiskit--Aer-0.17.2-7B68EE.svg)](https://github.com/Qiskit/qiskit-aer)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests: Pytest](https://img.shields.io/badge/Tests-Pytest-0A9EDC.svg?logo=pytest&logoColor=white)](tests/)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Status-Active-success.svg" alt="Status">
-  <img src="https://img.shields.io/badge/Maintained-Yes-green.svg" alt="Maintained">
+  <a href="#-executive-summary">Executive Summary</a> •
+  <a href="#-mathematical--quantum-foundations">Quantum Foundations</a> •
+  <a href="#-preset-experiments--zero-friction-guest-mode">Presets & Demo</a> •
+  <a href="#%EF%B8%8F-system-architecture">Architecture</a> •
+  <a href="#-installation--usage">Quick Start</a> •
+  <a href="#-academic-citation">Citation</a>
 </p>
-
-[Características](#-características) • [Instalación](#-instalación) • [Uso](#-uso) • [Arquitectura](#-arquitectura) • [Tecnologías](#️-tecnologías)
 
 </div>
 
 ---
 
-## 📖 Descripción
+## 🔬 Executive Summary
 
-**Q-Sec** es una aplicación web educativa que simula el protocolo de **Distribución Cuántica de Claves BB84**, uno de los pilares fundamentales de la criptografía cuántica. El proyecto permite a usuarios sin conocimientos previos en computación cuántica comprender cómo funciona este revolucionario protocolo de seguridad.
+**Q-Sec** is an open-source, research-grade web simulation platform for **Quantum Key Distribution (QKD)** adhering to the **Bennett-Brassard 1984 (BB84)** protocol. Built with **IBM Qiskit 2.2**, **Qiskit-Aer**, and **Flask**, Q-Sec models real-time quantum circuit construction, single-photon quantum state preparation across conjugate non-orthogonal bases, environmental quantum channel decoherence, and active adversarial interception (Eve).
 
-A través de una interfaz intuitiva, los usuarios pueden:
-- 🔬 Ejecutar simulaciones paso a paso del protocolo BB84
-- 👁️ Observar en tiempo real la transmisión y medición de qubits
-- 🕵️ Simular ataques de espionaje (Eve) y detectar intrusiones
-- 📊 Visualizar resultados y estadísticas de cada simulación
-- 📚 Almacenar y consultar historial de simulaciones
-
-> **¿Qué es BB84?** Es el primer protocolo de distribución cuántica de claves, creado por Charles Bennett y Gilles Brassard en 1984. Utiliza los principios de la mecánica cuántica para garantizar comunicaciones absolutamente seguras, donde cualquier intento de espionaje es detectado automáticamente.
+Developed to bridge foundational quantum physics with modern cryptographic network engineering, Q-Sec computes rigorous quantum information-theoretic metrics—including **Shannon binary entropy** and the **asymptotic Secret Key Rate** under one-way classical post-processing ($R \ge 1 - 2h(\text{QBER})$). The platform was peer-reviewed and presented at the **National Conference on Information Engineering and Information Systems (CoNaIISI 2026)**.
 
 ---
 
-## ✨ Características
+## ⚛️ Mathematical & Quantum Foundations
 
-### 🎯 Funcionalidades Principales
+### 1. Quantum State Preparation & Encoding
+Alice generates independent identically distributed (i.i.d.) random classical bits $b_i \in \{0, 1\}$ and encoding bases $\theta_A \in \{\boxplus, \boxtimes\}$. Quantum states $|\psi\rangle$ are prepared on the Bloch sphere as:
 
-- **👤 Sistema de Usuarios**
-  - Registro y autenticación segura con Flask-Login
-  - Contraseñas cifradas con Werkzeug
-  - Sesiones persistentes con cookies seguras
+$$\begin{aligned}
+\text{Rectilinear Basis } (\boxplus): \quad & |0\rangle = \begin{pmatrix} 1 \\ 0 \end{pmatrix}, \quad |1\rangle = X|0\rangle = \begin{pmatrix} 0 \\ 1 \end{pmatrix} \\
+\text{Diagonal Basis } (\boxtimes): \quad & |+\rangle = H|0\rangle = \frac{|0\rangle + |1\rangle}{\sqrt{2}}, \quad |-\rangle = H|1\rangle = \frac{|0\rangle - |1\rangle}{\sqrt{2}}
+\end{aligned}$$
 
-- **⚛️ Simulación Cuántica Realista**
-  - Implementación completa del protocolo BB84 con IBM Qiskit
-  - Generación aleatoria de bits y bases cuánticas
-  - Codificación de qubits en bases rectilínea (+) y diagonal (×)
-  - Medición cuántica con colapso de estado
+where $X = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}$ and $H = \frac{1}{\sqrt{2}}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$.
 
-- **🕵️ Detección de Espionaje**
-  - Simulación opcional de interceptación por un atacante (Eve)
-  - Cálculo automático de tasa de error cuántico (QBER)
-  - Alertas de seguridad basadas en anomalías estadísticas
+### 2. Quantum Channel & Depolarizing Noise
+To model realistic networked optical fiber or free-space quantum channels subject to thermal fluctuations and fiber birefringence, Q-Sec implements a single-qubit **depolarizing quantum channel** $\mathcal{E}_\epsilon$ using `qiskit_aer.noise`:
 
-- **📊 Visualización y Análisis**
-  - Dashboard interactivo con resultados detallados
-  - Historial completo de simulaciones
-  - Estadísticas de éxito/compromiso de claves
-  - Visualización paso a paso del proceso
+$$\mathcal{E}_\epsilon(\rho) = (1 - \epsilon)\rho + \frac{\epsilon}{3}\left(X\rho X + Y\rho Y + Z\rho Z\right)$$
 
-- **🏗️ Arquitectura Robusta**
-  - Diseño en 3 capas (Presentación, Negocio, Datos)
-  - Testing automatizado con Pytest
-  - Separación clara de responsabilidades
-  - Código modular y mantenible
+where $\epsilon \in [0, 1]$ represents the depolarizing error rate parameter.
+
+### 3. Projective Measurement & Wave-Function Collapse
+Bob independently selects measurement bases $\theta_B \in \{\boxplus, \boxtimes\}$. Projective measurement outcomes in the diagonal basis are executed via unitary basis rotation followed by computational Z-basis projection:
+
+$$P_{0} = |0\rangle\langle 0|, \quad P_{1} = |1\rangle\langle 1|$$
+
+By the **No-Cloning Theorem** and Heisenberg uncertainty, an eavesdropper measuring in a mismatched basis irreversibly perturbs the density operator, inducing errors on Bob's measurement outcomes.
+
+### 4. Sifting & Quantum Bit Error Rate (QBER)
+Over an authenticated public classical channel, Alice and Bob reconcile bases. The sifted index set $\mathcal{S} = \{i : \theta_{A,i} = \theta_{B,i}\}$ yields the sifted key. A non-disclosed random test sample $\mathcal{T} \subset \mathcal{S}$ is sacrificed to compute the parameter estimation metric:
+
+$$\text{QBER} = \frac{1}{|\mathcal{T}|} \sum_{j \in \mathcal{T}} |a_j \oplus b_j|$$
+
+Under an ideal channel without eavesdropping, $\text{QBER} = 0\%$. Under a standard intercept-resend attack with Eve intercepting each qubit, $\mathbb{E}[\text{QBER}] = 25\%$.
+
+### 5. Asymptotic Secret Key Rate
+Under the Shor-Preskill and Devetak-Winter security proofs for one-way forward classical error correction and privacy amplification, the asymptotic secret key fraction $R$ per sifted bit satisfies:
+
+$$R \ge \max\left(0, 1 - 2 \cdot h(\text{QBER})\right)$$
+
+where $h(p)$ is the Shannon binary entropy function:
+
+$$h(p) = -p \log_2(p) - (1 - p) \log_2(1 - p), \quad \text{with } h(0) = h(1) = 0$$
+
+If $\text{QBER} \ge 11.00\%$ (the Shor-Preskill threshold), $1 - 2h(\text{QBER}) \le 0$, and the asymptotic secret key rate drops strictly to $R = 0$, mandating protocol abort.
 
 ---
 
-## 🚀 Instalación
+## ⚡ Preset Experiments & Zero-Friction Guest Mode
 
-### Requisitos Previos
+Q-Sec provides instant access without mandatory registration or login. Evaluators, researchers, and students can run live simulations in-memory:
 
-- Python 3.9 o superior
-- pip (gestor de paquetes de Python)
-- Git
+| Preset | Scenario | Configuration | Expected Outcome |
+|---|---|---|---|
+| **Preset 1** | **Ideal Quantum Channel** | 20 qubits, No Eve, Noise $\epsilon = 0.0$ | $\text{QBER} \approx 0.0\%$, $R \approx 1.0$, Secure Key Extracted |
+| **Preset 2** | **Eavesdropping Attack** | 20 qubits, Eve Active, Noise $\epsilon = 0.0$ | $\text{QBER} \approx 25.0\%$, $R = 0.0$, Aborted / Compromised |
+| **Preset 3** | **Noisy Environment** | 20 qubits, No Eve, Noise $\epsilon = 0.15$ | Environmental Decoherence, $\text{QBER} > 11.0\%$, $R = 0.0$ |
 
-### Pasos de Instalación
+---
 
-1. **Clonar el repositorio**
-```bash
-git clone https://github.com/SrNanu/Q-sec
-cd Q-Sec-linkedin
+## 🏗️ System Architecture
+
+Q-Sec follows a modular, 3-tier enterprise and academic architecture:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   PRESENTATION LAYER                        │
+│   Jinja2 Templates (HTML5 / Bootstrap 5 / SVG Visualizer)   │
+│   Routes & REST API (/simulator, /animation, /api/run-*)   │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+┌──────────────────────────────▼──────────────────────────────┐
+│                    BUSINESS ENGINE                          │
+│   • Simulation Controller: Orchestration & In-Memory Cache  │
+│   • BB84 Simulation Engine: Qiskit Circuit Synthesis       │
+│   • Noise Modeling: qiskit_aer.noise.depolarizing_error     │
+│   • Information Metrics: Shannon Entropy & Secret Key Rate  │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+┌──────────────────────────────▼──────────────────────────────┐
+│                     DATA ACCESS LAYER                       │
+│   • SQLAlchemy ORM (User & SimulationSession Entities)      │
+│   • Auto-Schema Migrations (datos/esquema.py)              │
+│   • Engine-Agnostic Storage: SQLite3 / PostgreSQL / MySQL   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-2. **Crear un entorno virtual** (recomendado)
+---
+
+## 🚀 Installation & Usage
+
+### Prerequisites
+- Python 3.9 or higher
+- `pip` package manager
+- `git`
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/SrNanu/Q-sec.git
+cd Q-sec
+```
+
+### 2. Configure Virtual Environment
 ```bash
 # Windows
 python -m venv venv
 venv\Scripts\activate
 
-# Linux/Mac
+# macOS / Linux
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-3. **Instalar dependencias**
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run Automated Test Suite
+Verify mathematical correctness and regression safety across all 96 unit, integration, and noise-modeling tests:
+```bash
+pytest -v
+```
+
+### 5. Launch Local Development Server
+```bash
+python run.py
+```
+Open your web browser and navigate to `http://127.0.0.1:5000/`.
+
+---
+
+## 📄 Academic Citation
+
+If you use Q-Sec or its simulation methodology in your academic work, research, or teaching, please cite our CoNaIISI 2026 publication:
+
+### BibTeX
+```bibtex
+@inproceedings{cataldi2026qsec,
+  title={{Q-Sec: Simulador Interactivo del Protocolo de Distribuci{\'o}n Cu{\'a}ntica de Claves BB84}},
+  author={Cataldi, Santino and Cosentino, Lucio and Martinez, Gaspar and Wardoloff, Tom{\'a}s},
+  booktitle={Congreso Nacional de Ingenier{\'i}a Inform{\'a}tica y Sistemas de Informaci{\'o}n (CoNaIISI 2026)},
+  year={2026},
+  organization={Universidad Tecnol{\'o}gica Nacional, Facultad Regional Rosario},
+  address={Rosario, Argentina}
+}
+```
+
+### APA
+> Cataldi, S., Cosentino, L., Martinez, G., & Wardoloff, T. (2026). *Q-Sec: Simulador Interactivo del Protocolo de Distribución Cuántica de Claves BB84*. Congreso Nacional de Ingeniería Informática y Sistemas de Información (CoNaIISI 2026). Universidad Tecnológica Nacional, Facultad Regional Rosario.
+
+---
+
+## ⚖️ License
+This project is licensed under the terms of the [MIT License](LICENSE).
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -232,83 +320,6 @@ Q-Sec-linkedin/
 - **Flask 3.1.2** - Framework web minimalista y potente
 - **Flask-Login 0.6.3** - Gestión de sesiones de usuario
 - **Flask-SQLAlchemy 3.1.1** - ORM para base de datos
-- **Flask-WTF 1.2.2** - Formularios web seguros
-
-### Computación Cuántica
-- **IBM Qiskit 2.2.0** - Framework de computación cuántica
-- **Qiskit-Aer 0.17.2** - Simulador de circuitos cuánticos
-- **NumPy 2.3.3** - Cálculos numéricos y matrices
-
-### Base de Datos
-- **SQLite** - Base de datos embebida
-- **SQLAlchemy 2.0.43** - ORM Python-SQL
-
-### Testing & Calidad
-- **Pytest 8.4.2** - Framework de testing
-- **Python-dotenv 1.1.1** - Gestión de variables de entorno
-
-### Utilidades
-- **Werkzeug 3.1.3** - Utilidades WSGI (hashing de contraseñas)
-- **WTForms 3.2.1** - Validación de formularios
-
----
-
-## 🧪 Testing
-
-El proyecto incluye una suite completa de tests:
-
-```bash
-# Ejecutar todos los tests
-pytest
-
-# Tests específicos
-pytest tests/test_bb84.py           # Tests del protocolo BB84
-pytest tests/test_models.py         # Tests de modelos de datos
-pytest tests/test_integration.py    # Tests de integración
-
-# Con reporte de cobertura
-pytest --cov=business --cov=datos --cov=views
-```
-
-### Cobertura de Tests
-
-- ✅ Protocolo BB84 completo
-- ✅ Detección de espionaje
-- ✅ Autenticación de usuarios
-- ✅ Persistencia de simulaciones
-- ✅ Integración entre capas
-
----
-
-## 🎓 Conceptos Cuánticos
-
-### El Protocolo BB84
-
-1. **Preparación (Alice)**
-   - Genera bits aleatorios: `[0, 1, 1, 0, ...]`
-   - Elige bases aleatorias: `[+, ×, +, ×, ...]`
-   - Codifica qubits según base y bit
-
-2. **Transmisión**
-   - Los qubits viajan por el canal cuántico
-   - Eve puede interceptar (opcional)
-
-3. **Medición (Bob)**
-   - Elige bases aleatorias independientes
-   - Mide los qubits recibidos
-
-4. **Reconciliación**
-   - Alice y Bob comparan bases públicamente
-   - Descartan bits con bases diferentes
-   - Verifican errores para detectar espías
-
-### Estados Cuánticos
-
-| Bit | Base + | Base × |
-|-----|--------|--------|
-| 0   | \|0⟩   | \|+⟩   |
-| 1   | \|1⟩   | \|-⟩   |
-
 ---
 
 ## 📝 Documentación Adicional
