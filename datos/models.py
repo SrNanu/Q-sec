@@ -19,6 +19,30 @@ def utc_now():
     return datetime.now(timezone.utc)
 
 
+class UTCDateTime(db.TypeDecorator):
+    """DateTime que siempre guarda y devuelve un valor UTC timezone-aware.
+
+    SQLite (a diferencia de Postgres) no tiene un tipo de dato con zona
+    horaria: cualquier ``datetime`` aware pierde su tzinfo al guardarse y
+    vuelve naive al leerse. Como todo lo que escribe esta app usa
+    ``utc_now()``, alcanza con reponer ``tzinfo=UTC`` al leer para que el
+    round-trip sea consistente en cualquier motor.
+    """
+
+    impl = db.DateTime(timezone=True)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is not None and value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None and value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value
+
+
 class User(db.Model, UserMixin):
     """
     Modelo de Usuario
@@ -32,7 +56,7 @@ class User(db.Model, UserMixin):
     # SQLite ignora la longitud declarada, pero Postgres/MySQL la validan y el
     # registro de usuarios fallaría en produccion.
     password_hash = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=True, default=utc_now)
+    created_at = db.Column(UTCDateTime, nullable=True, default=utc_now)
 
     # Relación con sesiones de simulación
     sessions = db.relationship(
@@ -67,12 +91,14 @@ class SimulationSession(db.Model):
     result = db.Column(db.String(50), nullable=False)  # 'secure' o 'compromised'
     final_key = db.Column(db.Text, nullable=True)
     error_rate = db.Column(db.Float, nullable=True)
-    timestamp = db.Column(db.DateTime, nullable=False, default=utc_now, index=True)
+    timestamp = db.Column(UTCDateTime, nullable=False, default=utc_now, index=True)
 
     # Resultados intermedios del protocolo. Las sesiones anteriores a estas
     # columnas las tienen vacias.
     sifted_length = db.Column(db.Integer, nullable=True)  # bits de la clave tamizada
     sample_size = db.Column(db.Integer, nullable=True)    # bits usados para estimar el QBER
+    noise_rate = db.Column(db.Float, nullable=True, default=0.0)  # tasa de ruido del canal despolarizante
+    secret_key_rate = db.Column(db.Float, nullable=True)  # tasa asintotica de clave secreta R
 
     # Foreign Key
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -89,6 +115,8 @@ class SimulationSession(db.Model):
             'result': self.result,
             'final_key': self.final_key,
             'error_rate': self.error_rate,
+            'noise_rate': self.noise_rate if self.noise_rate is not None else 0.0,
+            'secret_key_rate': self.secret_key_rate,
             'timestamp': self.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             'sifted_length': self.sifted_length,
             'sample_size': self.sample_size,

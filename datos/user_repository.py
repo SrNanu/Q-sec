@@ -54,9 +54,12 @@ def get_user_by_username(username):
     Returns:
         User: El usuario encontrado o None
     """
+    # .first() y no .scalar_one_or_none(): la columna es unique=True en el
+    # modelo, pero una base creada antes de que existiera ese índice puede
+    # tener duplicados, y no es este el lugar para hacerla fallar por eso.
     return db.session.execute(
         db.select(User).filter_by(username=username)
-    ).scalar_one_or_none()
+    ).scalars().first()
 
 
 def verify_user_password(username, password):

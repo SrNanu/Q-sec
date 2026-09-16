@@ -6,7 +6,7 @@ from datos.models import SimulationSession, db
 
 
 def create_session(user_id, key_length, has_eve, result, final_key=None, error_rate=None,
-                   sifted_length=None, sample_size=None):
+                   sifted_length=None, sample_size=None, noise_rate=0.0, secret_key_rate=None):
     """
     Crea una nueva sesión de simulación en la base de datos
 
@@ -19,6 +19,8 @@ def create_session(user_id, key_length, has_eve, result, final_key=None, error_r
         error_rate (float, optional): Tasa de error cuántico
         sifted_length (int, optional): Bits de la clave tamizada
         sample_size (int, optional): Bits usados para estimar el QBER
+        noise_rate (float, optional): Nivel de ruido cuántico despolarizante
+        secret_key_rate (float, optional): Tasa asintótica de clave secreta
 
     Returns:
         SimulationSession: La sesión creada
@@ -31,7 +33,9 @@ def create_session(user_id, key_length, has_eve, result, final_key=None, error_r
         final_key=final_key,
         error_rate=error_rate,
         sifted_length=sifted_length,
-        sample_size=sample_size
+        sample_size=sample_size,
+        noise_rate=noise_rate,
+        secret_key_rate=secret_key_rate
     )
     db.session.add(session)
     db.session.commit()
@@ -108,21 +112,6 @@ def delete_session(session_id):
         db.session.commit()
         return True
     return False
-
-
-def count_user_sessions(user_id):
-    """
-    Cuenta el número total de sesiones de un usuario
-
-    Args:
-        user_id (int): ID del usuario
-
-    Returns:
-        int: Número de sesiones
-    """
-    return db.session.execute(
-        db.select(db.func.count(SimulationSession.id)).filter_by(user_id=user_id)
-    ).scalar_one()
 
 
 def count_sessions_by_result(user_id):

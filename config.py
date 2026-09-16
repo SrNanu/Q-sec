@@ -30,10 +30,12 @@ def normalizar_url(url):
     ``postgresql://``.
 
     El driver no se fuerza: SQLAlchemy usa el que corresponda y cada entorno
-    instala el que prefiera (psycopg2, psycopg 3, etc.).
+    instala el que prefiera (psycopg2, psycopg 3, etc.). Por eso también hay
+    que corregir variantes como ``postgres+psycopg2://``, no sólo el prefijo
+    exacto ``postgres://``.
     """
-    if url and url.startswith('postgres://'):
-        return 'postgresql://' + url[len('postgres://'):]
+    if url and url.startswith(('postgres://', 'postgres+')):
+        return 'postgresql' + url[len('postgres'):]
     return url
 
 
@@ -66,6 +68,9 @@ class TestingConfig(Config):
 class ProduccionConfig(Config):
     DEBUG = False
     SESSION_COOKIE_SECURE = True
+    # Flask-Login tiene su propio default (False) para la cookie de "recordarme",
+    # independiente de SESSION_COOKIE_SECURE: sin esto viaja por HTTP en producción.
+    REMEMBER_COOKIE_SECURE = True
 
     def __init__(self):
         # Fallar al arrancar es preferible a servir en producción con la clave
@@ -87,7 +92,7 @@ CONFIGURACIONES = {
 
 def obtener_config(nombre=None):
     """Devuelve la clase de configuración del entorno pedido."""
-    nombre = nombre or os.getenv('FLASK_ENV', 'development')
+    nombre = (nombre or os.getenv('FLASK_ENV', 'development')).strip().lower()
     clase = CONFIGURACIONES.get(nombre, DesarrolloConfig)
     # ProduccionConfig valida en __init__, así que se instancia
-    return clase() if nombre == 'production' else clase
+    return clase() if clase is ProduccionConfig else clase

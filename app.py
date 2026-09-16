@@ -74,13 +74,20 @@ def create_app(config=None, crear_tablas=True):
     return app
 
 
-# Instancia por defecto, para `python app.py`, `flask run` y gunicorn
-app = create_app()
+# Instancia por defecto, para `flask run`, gunicorn y el paso manual de
+# inicialización de la base que documenta el README. No crea tablas: como
+# construirla es un efecto colateral de importar este módulo, hacerlo
+# automáticamente rompía la promesa de create_app() de no tocar disco al
+# importar (ver docstring) y escribía en la base real al correr los tests.
+app = create_app(crear_tablas=False)
 
 
 if __name__ == '__main__':
-    app.run(
-        debug=app.config.get('DEBUG', False),
+    # Instancia propia, con las tablas creadas: `python app.py` es un arranque
+    # real, no una importación.
+    aplicacion = create_app()
+    aplicacion.run(
+        debug=aplicacion.config.get('DEBUG', False),
         host='0.0.0.0',
         port=int(os.getenv('PORT', 5000)),
     )

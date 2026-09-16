@@ -1,42 +1,80 @@
 """
-Simulación del Protocolo BB84 usando Qiskit
-Este archivo contiene la implementación completa del protocolo cuántico
+BB84 Protocol Quantum Simulation using Qiskit & Qiskit-Aer.
+Implements quantum key distribution, channel noise modeling (depolarizing channel),
+eavesdropping detection, QBER estimation, and asymptotic secret key rate calculation.
 """
 import random
 import numpy as np
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+from qiskit import QuantumCircuit
 from qiskit_aer import Aer
-from qiskit.visualization import plot_histogram
+from qiskit_aer.noise import NoiseModel, depolarizing_error
+
+
+def binary_entropy(p: float) -> float:
+    """
+    Calculates the binary Shannon entropy h(p).
+    h(p) = -p*log2(p) - (1-p)*log2(1-p), with h(0) = h(1) = 0.
+    
+    Args:
+        p (float): Error probability / QBER.
+        
+    Returns:
+        float: Shannon entropy in bits [0.0, 1.0].
+    """
+    if p <= 0.0 or p >= 1.0:
+        return 0.0
+    return float(-p * np.log2(p) - (1.0 - p) * np.log2(1.0 - p))
+
+
+def calculate_secret_key_rate(qber: float) -> float:
+    """
+    Calculates the asymptotic secret key rate R under one-way classical post-processing
+    (Shor-Preskill / Devetak-Winter bound):
+    R >= max(0, 1 - 2 * h(QBER))
+    
+    Returns 0.0 if QBER >= 11% (the BB84 theoretical threshold).
+    
+    Args:
+        qber (float): Quantum Bit Error Rate in [0.0, 1.0].
+        
+    Returns:
+        float: Asymptotic secret key rate fraction [0.0, 1.0].
+    """
+    if qber >= 0.11 or qber < 0.0:
+        return 0.0
+    h_p = binary_entropy(qber)
+    rate = 1.0 - 2.0 * h_p
+    return max(0.0, float(rate))
 
 
 def generate_random_bits(n):
-    """Genera n bits aleatorios"""
+    """Generates n random classical bits (0 or 1)"""
     return [random.randint(0, 1) for _ in range(n)]
 
 
 def generate_random_bases(n):
-    """Genera n bases aleatorias (0=rectilínea +, 1=diagonal x)"""
+    """Generates n random bases (0=rectilinear +, 1=diagonal x)"""
     return [random.randint(0, 1) for _ in range(n)]
 
 
 def encode_qubit(bit, basis):
     """
-    Codifica un bit en un qubit según la base
+    Encodes a bit into a qubit state according to the selected basis.
     
     Args:
-        bit (int): 0 o 1
-        basis (int): 0 (base +) o 1 (base x)
+        bit (int): 0 or 1
+        basis (int): 0 (rectilinear +) or 1 (diagonal x)
     
     Returns:
-        QuantumCircuit: Circuito con el qubit codificado
+        QuantumCircuit: Circuit with the prepared single-qubit state
     """
     qc = QuantumCircuit(1, 1)
     
-    # Codificar el bit
+    # State preparation in Z basis
     if bit == 1:
-        qc.x(0)  # Aplicar NOT si el bit es 1
+        qc.x(0)
     
-    # Aplicar Hadamard si la base es diagonal (x)
+    # Basis rotation: apply Hadamard for diagonal basis (|+) or |->)
     if basis == 1:
         qc.h(0)
     
@@ -45,16 +83,16 @@ def encode_qubit(bit, basis):
 
 def measure_qubit(qc, basis):
     """
-    Mide un qubit en la base especificada
+    Measures a qubit in the specified basis.
     
     Args:
-        qc (QuantumCircuit): Circuito cuántico
-        basis (int): Base de medición (0=+, 1=x)
+        qc (QuantumCircuit): Single-qubit circuit
+        basis (int): Measurement basis (0=+, 1=x)
     
     Returns:
-        QuantumCircuit: Circuito con la medición aplicada
+        QuantumCircuit: Circuit with measurement operation added
     """
-    # Si la base es diagonal, aplicar Hadamard antes de medir
+    # Basis rotation before projective Z measurement
     if basis == 1:
         qc.h(0)
     
@@ -64,30 +102,29 @@ def measure_qubit(qc, basis):
 
 def eve_intercept(qc):
     """
-    Simula la interceptación y medición de Eve
-    Eve mide con una base aleatoria e intenta reenviar
+    Simulates Eve's intercept-resend attack.
+    Eve measures in a random basis and prepares a new qubit to resend to Bob.
     
     Args:
-        qc (QuantumCircuit): Circuito a interceptar
+        qc (QuantumCircuit): Intercepted circuit
     
     Returns:
-        tuple: (circuito modificado, base usada por Eve, resultado de Eve)
+        tuple: (new circuit, Eve basis, Eve measured bit)
     """
     eve_basis = random.randint(0, 1)
     
-    # Eve mide con su base aleatoria
+    # Eve measures in her chosen basis
     if eve_basis == 1:
         qc.h(0)
     qc.measure(0, 0)
     
-    # Simular ejecución para obtener el resultado de Eve
     simulator = Aer.get_backend('qasm_simulator')
     job = simulator.run(qc, shots=1)
     result = job.result()
     counts = result.get_counts()
     eve_bit = int(list(counts.keys())[0])
     
-    # Eve prepara un nuevo qubit con lo que midió
+    # Eve prepares a fresh qubit corresponding to her measurement outcome
     qc_new = QuantumCircuit(1, 1)
     if eve_bit == 1:
         qc_new.x(0)
@@ -97,127 +134,132 @@ def eve_intercept(qc):
     return qc_new, eve_basis, eve_bit
 
 
-def simulate_bb84(key_length, has_eve=False):
+def simulate_bb84(key_length, has_eve=False, noise_rate=0.0):
     """
-    Simula el protocolo BB84 completo
+    Simulates the complete BB84 QKD protocol including quantum state encoding,
+    channel transmission with optional depolarizing noise, intercept-resend attack,
+    sifting, QBER calculation, and asymptotic secret key rate estimation.
     
     Args:
-        key_length (int): Longitud de la secuencia inicial
-        has_eve (bool): Si hay espía o no
+        key_length (int): Initial number of transmitted qubits
+        has_eve (bool): Whether an eavesdropper (Eve) intercepts the channel
+        noise_rate (float): Channel depolarizing error parameter [0.0, 1.0]
     
     Returns:
-        dict: Resultado de la simulación
+        dict: Complete simulation telemetry, keys, metrics, and trace
     """
-    # Paso 1: Alice genera bits y bases aleatorias
+    # Step 1: Alice generates random bits and random encoding bases
     alice_bits = generate_random_bits(key_length)
     alice_bases = generate_random_bases(key_length)
     
-    # Paso 2: Bob genera bases aleatorias
+    # Step 2: Bob generates random measurement bases
     bob_bases = generate_random_bases(key_length)
     
-    # Paso 3: Transmisión y medición de qubits
+    # Step 3: Configure channel noise model if specified
+    noise_model = None
+    if noise_rate > 0.0:
+        noise_model = NoiseModel()
+        error = depolarizing_error(float(noise_rate), 1)
+        noise_model.add_all_qubit_quantum_error(error, ['id'])
+    
+    # Step 4: Transmission and measurement
     bob_results = []
-    # Lo que midio Eve, para que la animacion muestre lo que paso de verdad
     eve_bases = []
     eve_bits = []
     simulator = Aer.get_backend('qasm_simulator')
     
     for i in range(key_length):
-        # Alice codifica su bit
+        # Alice prepares the quantum state
         qc = encode_qubit(alice_bits[i], alice_bases[i])
         
-        # Si hay Eve, intercepta
+        # Environmental channel transmission
+        if noise_rate > 0.0:
+            qc.id(0)
+        
+        # Eavesdropper intercept-resend attack
         if has_eve:
             qc, eve_basis, eve_bit = eve_intercept(qc)
             eve_bases.append(eve_basis)
             eve_bits.append(eve_bit)
+            if noise_rate > 0.0:
+                qc.id(0)
         
-        # Bob mide con su base
+        # Bob applies measurement basis rotation and projects
         qc = measure_qubit(qc, bob_bases[i])
         
-        # Ejecutar el circuito
-        job = simulator.run(qc, shots=1)
+        # Run quantum circuit
+        job = simulator.run(qc, shots=1, noise_model=noise_model) if noise_model else simulator.run(qc, shots=1)
         result = job.result()
         counts = result.get_counts()
         bob_bit = int(list(counts.keys())[0])
         bob_results.append(bob_bit)
     
-    # Paso 4: Comparación pública de bases
+    # Step 5: Public basis reconciliation (sifting)
     matching_bases_indices = [i for i in range(key_length) if alice_bases[i] == bob_bases[i]]
-    
-    # Paso 5: Clave filtrada (donde las bases coinciden)
     alice_key = [alice_bits[i] for i in matching_bases_indices]
     bob_key = [bob_results[i] for i in matching_bases_indices]
     
-    # Paso 6: Calcular tasa de error (QBER)
-    # Con menos de 4 bits cribados, el 25% de la muestra da 0 bits y el
-    # calculo de la tasa dividia por cero (pasaba ~1 de cada 3 corridas con
-    # key_length=10, el minimo que acepta el formulario).
+    # Sifting validation: need at least 4 bits to sample QBER
     if len(alice_key) < 4:
         return {
             'success': False,
             'message': (
-                f'Coincidieron sólo {len(alice_key)} bases de {key_length} qubits: '
-                'hacen falta al menos 4 bits cribados para estimar el error. '
-                'Probá con una longitud de clave mayor.'
+                f'Only {len(alice_key)} bases matched out of {key_length} qubits: '
+                'at least 4 sifted bits are required to estimate QBER. '
+                'Please try again with a larger key length.'
             )
         }
     
-    # Comparar una muestra para detectar espionaje
-    sample_size = min(len(alice_key) // 4, 20)  # 25% de la clave o máximo 20 bits
+    # Step 6: Parameter estimation (QBER sampling)
+    sample_size = min(len(alice_key) // 4, 20)  # 25% of sifted key or max 20 bits
     sample_indices = random.sample(range(len(alice_key)), sample_size)
     
     errors = sum(1 for i in sample_indices if alice_key[i] != bob_key[i])
     error_rate = errors / sample_size
     
-    # Paso 7: Decidir si la clave es segura
-    THRESHOLD = 0.11  # Umbral típico para BB84
+    # Quantum information security metrics
+    shannon_ent = binary_entropy(error_rate)
+    secret_key_rate = calculate_secret_key_rate(error_rate)
+    
+    THRESHOLD = 0.11  # Shor-Preskill threshold for BB84 (11%)
+    
+    resultado = {
+        'success': True,
+        'error_rate': error_rate,
+        'shannon_entropy': round(shannon_ent, 4),
+        'secret_key_rate': round(secret_key_rate, 4),
+        'noise_rate': noise_rate,
+        'key_length_initial': key_length,
+        'key_length_after_sifting': len(alice_key),
+        'sample_size': sample_size,
+        'matching_bases': len(matching_bases_indices),
+        'alice_bits': alice_bits,
+        'alice_bases': alice_bases,
+        'bob_bases': bob_bases,
+        'bob_bits': bob_results,
+        'eve_bases': eve_bases,
+        'eve_bits': eve_bits,
+        'matching_indices': matching_bases_indices,
+    }
     
     if error_rate < THRESHOLD:
-        # Remover los bits usados en la verificación
+        # Discard the revealed sample bits to form the final secret key
         final_key_bits = [alice_key[i] for i in range(len(alice_key)) if i not in sample_indices]
         final_key = ''.join(map(str, final_key_bits))
         
-        return {
-            'success': True,
+        resultado.update({
             'result': 'secure',
             'final_key': final_key,
-            'error_rate': error_rate,
-            'key_length_initial': key_length,
-            'key_length_after_sifting': len(alice_key),
-            'sample_size': sample_size,
             'key_length_final': len(final_key_bits),
-            'matching_bases': len(matching_bases_indices),
-            # Traza del protocolo: la consume la animacion, que antes generaba
-            # estos bits con Math.random() en el navegador
-            'alice_bits': alice_bits,
-            'alice_bases': alice_bases,
-            'bob_bases': bob_bases,
-            'bob_bits': bob_results,
-            'eve_bases': eve_bases,
-            'eve_bits': eve_bits,
-            'matching_indices': matching_bases_indices,
-            'message': f'Clave segura generada. QBER: {error_rate:.2%}'
-        }
+            'message': f'Secure key successfully generated. QBER: {error_rate:.2%} | Secret Key Rate: {secret_key_rate:.3f}',
+        })
     else:
-        return {
-            'success': True,
+        reason = "Eavesdropping detected!" if has_eve else "Severe channel noise / decoherence detected!"
+        resultado.update({
             'result': 'compromised',
             'final_key': None,
-            'error_rate': error_rate,
-            'key_length_initial': key_length,
-            'key_length_after_sifting': len(alice_key),
-            'sample_size': sample_size,
             'key_length_final': 0,
-            'matching_bases': len(matching_bases_indices),
-            # Traza del protocolo: la consume la animacion, que antes generaba
-            # estos bits con Math.random() en el navegador
-            'alice_bits': alice_bits,
-            'alice_bases': alice_bases,
-            'bob_bases': bob_bases,
-            'bob_bits': bob_results,
-            'eve_bases': eve_bases,
-            'eve_bits': eve_bits,
-            'matching_indices': matching_bases_indices,
-            'message': f'¡Espionaje detectado! QBER demasiado alto: {error_rate:.2%}'
-        }
+            'message': f'{reason} High QBER: {error_rate:.2%} (Secret Key Rate: 0.000)',
+        })
+    
+    return resultado

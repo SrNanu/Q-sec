@@ -49,14 +49,16 @@ def get_user_statistics(user_id):
     }
 
 
-def run_bb84_simulation(user_id, key_length, has_eve):
+def run_bb84_simulation(user_id, key_length, has_eve, noise_rate=0.0):
     """
-    Ejecuta la simulación completa del protocolo BB84 con Qiskit
+    Ejecuta la simulación completa del protocolo BB84 con Qiskit.
+    Soporta modo invitado (user_id=None) sin persistencia en base de datos.
     
     Args:
-        user_id (int): ID del usuario que ejecuta la simulación
-        key_length (int): Longitud de la clave inicial
+        user_id (int or None): ID del usuario que ejecuta la simulación (None para modo invitado)
+        key_length (int): Longitud de la clave inicial (10 a 1000 qubits)
         has_eve (bool): Si incluir un espía o no
+        noise_rate (float): Nivel de ruido del canal despolarizante [0.0, 1.0]
     
     Returns:
         dict: Resultado de la simulación
@@ -65,41 +67,68 @@ def run_bb84_simulation(user_id, key_length, has_eve):
     if key_length < 10:
         return {
             'success': False,
-            'message': 'La longitud de la clave debe ser al menos 10 bits'
+            'message': 'Key length must be at least 10 qubits'
         }
     
     if key_length > 1000:
         return {
             'success': False,
-            'message': 'La longitud de la clave no puede exceder 1000 bits'
+            'message': 'Key length cannot exceed 1000 qubits'
         }
+    
+    try:
+        noise_rate = max(0.0, min(1.0, float(noise_rate)))
+    except (ValueError, TypeError):
+        noise_rate = 0.0
     
     try:
         # Importar la simulación BB84
         from business.bb84_simulation import simulate_bb84
         
         # Ejecutar la simulación cuántica
-        sim_result = simulate_bb84(key_length, has_eve)
+        sim_result = simulate_bb84(key_length, has_eve, noise_rate=noise_rate)
         
         if not sim_result['success']:
             return sim_result
         
-        # Guardar en la base de datos
-        session = session_repository.create_session(
-            user_id=user_id,
-            key_length=key_length,
-            has_eve=has_eve,
-            result=sim_result['result'],
-            final_key=sim_result.get('final_key'),
-            error_rate=sim_result.get('error_rate'),
-            sifted_length=sim_result.get('key_length_after_sifting'),
-            sample_size=sim_result.get('sample_size')
-        )
+        # Si el usuario está autenticado, guardar en base de datos
+        if user_id is not None:
+            session = session_repository.create_session(
+                user_id=user_id,
+                key_length=key_length,
+                has_eve=has_eve,
+                result=sim_result['result'],
+                final_key=sim_result.get('final_key'),
+                error_rate=sim_result.get('error_rate'),
+                sifted_length=sim_result.get('key_length_after_sifting'),
+                sample_size=sim_result.get('sample_size'),
+                noise_rate=noise_rate,
+                secret_key_rate=sim_result.get('secret_key_rate')
+            )
+            session_data = session.to_dict()
+        else:
+            # Modo Invitado (Guest Mode): sesión efímera en memoria
+            from datetime import datetime
+            session_data = {
+                'id': None,
+                'key_length': key_length,
+                'has_eve': has_eve,
+                'result': sim_result['result'],
+                'final_key': sim_result.get('final_key'),
+                'error_rate': sim_result.get('error_rate'),
+                'noise_rate': noise_rate,
+                'secret_key_rate': sim_result.get('secret_key_rate'),
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'sifted_length': sim_result.get('key_length_after_sifting'),
+                'sample_size': sim_result.get('sample_size'),
+                'user_id': None,
+                'is_guest': True
+            }
         
         return {
             'success': True,
             'message': sim_result['message'],
-            'session': session.to_dict(),
+            'session': session_data,
             'alice_bits': sim_result.get('alice_bits', []),
             'bob_bits': sim_result.get('bob_bits', []),
             'eve_bits': sim_result.get('eve_bits', []),
@@ -112,12 +141,15 @@ def run_bb84_simulation(user_id, key_length, has_eve):
                 'key_length_final': sim_result.get('key_length_final'),
                 'matching_bases': sim_result.get('matching_bases'),
                 'sample_size': sim_result.get('sample_size'),
-                'error_rate': sim_result.get('error_rate')
+                'error_rate': sim_result.get('error_rate'),
+                'shannon_entropy': sim_result.get('shannon_entropy'),
+                'secret_key_rate': sim_result.get('secret_key_rate'),
+                'noise_rate': noise_rate
             }
         }
     
     except Exception as e:
         return {
             'success': False,
-            'message': f'Error en la simulación: {str(e)}'
+            'message': f'Simulation error: {str(e)}'
         }
