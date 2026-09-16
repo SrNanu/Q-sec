@@ -1,53 +1,62 @@
 """
-Formularios de la aplicación usando Flask-WTF
+Application Forms using Flask-WTF
 """
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, IntegerField, SubmitField
-from wtforms.validators import DataRequired, Length, NumberRange
+from wtforms import StringField, PasswordField, BooleanField, IntegerField, FloatField, SubmitField
+from wtforms.validators import DataRequired, Length, NumberRange, Optional
 
 
 class RegisterForm(FlaskForm):
-    """Formulario de registro de usuario"""
+    """User Registration Form"""
     username = StringField(
-        'Usuario',
+        'Username',
         validators=[
-            DataRequired(message='El usuario es obligatorio'),
-            Length(min=3, max=80, message='El usuario debe tener entre 3 y 80 caracteres')
+            DataRequired(message='Username is required'),
+            Length(min=3, max=80, message='Username must be between 3 and 80 characters')
         ]
     )
     password = PasswordField(
-        'Contraseña',
+        'Password',
         validators=[
-            DataRequired(message='La contraseña es obligatoria'),
-            Length(min=6, message='La contraseña debe tener al menos 6 caracteres')
+            DataRequired(message='Password is required'),
+            Length(min=6, message='Password must be at least 6 characters')
         ]
     )
-    submit = SubmitField('Registrarse')
+    submit = SubmitField('Sign Up')
 
 
 class LoginForm(FlaskForm):
-    """Formulario de inicio de sesión"""
+    """User Login Form"""
     username = StringField(
-        'Usuario',
-        validators=[DataRequired(message='El usuario es obligatorio')]
+        'Username',
+        validators=[DataRequired(message='Username is required')]
     )
     password = PasswordField(
-        'Contraseña',
-        validators=[DataRequired(message='La contraseña es obligatoria')]
+        'Password',
+        validators=[DataRequired(message='Password is required')]
     )
-    remember_me = BooleanField('Recordarme')
-    submit = SubmitField('Iniciar Sesión')
+    remember_me = BooleanField('Remember me')
+    submit = SubmitField('Sign In')
 
 
 class SimulationForm(FlaskForm):
-    """Formulario para configurar una simulación BB84"""
+    """BB84 Simulation Configuration Form"""
     key_length = IntegerField(
-        'Longitud de la clave',
+        'Key Length (qubits)',
         validators=[
-            DataRequired(message='La longitud es obligatoria'),
-            NumberRange(min=10, max=1000, message='La longitud debe estar entre 10 y 1000 bits')
+            DataRequired(message='Key length is required'),
+            NumberRange(min=10, max=1000, message='Key length must be between 10 and 1000 qubits')
         ],
         default=64
     )
-    has_eve = BooleanField('Incluir espía (Eve)')
-    submit = SubmitField('Ejecutar Simulación')
+    has_eve = BooleanField('Enable Eavesdropper (Eve)')
+    noise_rate = FloatField(
+        'Channel Depolarizing Noise Rate (0.0 - 0.5)',
+        validators=[
+            Optional(),
+            NumberRange(min=0.0, max=1.0, message='Noise rate must be between 0.0 and 1.0')
+        ],
+        default=0.0
+    )
+    submit = SubmitField('Run Simulation')
+

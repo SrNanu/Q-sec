@@ -5,119 +5,141 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h2 class="mb-4">
-            <i class="bi bi-speedometer2"></i> Dashboard de {{ current_user.username }}
+        <h2 class="mb-4 fw-bold">
+            <i class="bi bi-speedometer2 text-primary"></i> Dashboard: {{ current_user.username }}
         </h2>
     </div>
 </div>
 
-<!-- Estadísticas -->
+<!-- Aggregated Metrics -->
 <div class="row g-3 mb-4">
     <div class="col-md-3">
-        <div class="card text-center bg-primary text-white">
-            <div class="card-body">
+        <div class="card text-center bg-primary text-white border-0 shadow-sm">
+            <div class="card-body py-4">
                 <i class="bi bi-collection fs-1"></i>
-                <h3 class="mt-2">{{ stats.total_simulations }}</h3>
-                <p class="mb-0">Total Simulaciones</p>
+                <h3 class="mt-2 fw-bold">{{ stats.total_simulations }}</h3>
+                <p class="mb-0 text-white-50">Total Experiments</p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card text-center bg-success text-white">
-            <div class="card-body">
+        <div class="card text-center bg-success text-white border-0 shadow-sm">
+            <div class="card-body py-4">
                 <i class="bi bi-shield-check fs-1"></i>
-                <h3 class="mt-2">{{ stats.secure_simulations }}</h3>
-                <p class="mb-0">Claves Seguras</p>
+                <h3 class="mt-2 fw-bold">{{ stats.secure_simulations }}</h3>
+                <p class="mb-0 text-white-50">Secure Keys</p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card text-center bg-danger text-white">
-            <div class="card-body">
+        <div class="card text-center bg-danger text-white border-0 shadow-sm">
+            <div class="card-body py-4">
                 <i class="bi bi-shield-x fs-1"></i>
-                <h3 class="mt-2">{{ stats.compromised_simulations }}</h3>
-                <p class="mb-0">Comprometidas</p>
+                <h3 class="mt-2 fw-bold">{{ stats.compromised_simulations }}</h3>
+                <p class="mb-0 text-white-50">Compromised / Aborted</p>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card text-center bg-info text-white">
-            <div class="card-body">
+        <div class="card text-center bg-info text-white border-0 shadow-sm">
+            <div class="card-body py-4">
                 <i class="bi bi-percent fs-1"></i>
-                <h3 class="mt-2">{{ stats.success_rate }}%</h3>
-                <p class="mb-0">Tasa de Éxito</p>
+                <h3 class="mt-2 fw-bold">{{ stats.success_rate }}%</h3>
+                <p class="mb-0 text-white-50">Success Rate</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Acciones rápidas -->
+<!-- Quick Actions -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Acciones Rápidas</h5>
-                <div class="d-grid gap-2 d-md-block">
-                    <a href="{{ url_for('simulator') }}" class="btn btn-primary">
-                        <i class="bi bi-play-circle"></i> Nueva Simulación
-                    </a>
-                    <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-clock-history"></i> Ver Historial Completo
-                    </a>
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <h5 class="card-title mb-0 fw-semibold">Quick Actions</h5>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('simulator') }}" class="btn btn-primary">
+                            <i class="bi bi-play-circle me-1"></i> New Simulation
+                        </a>
+                        <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-clock-history me-1"></i> View Full History
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Simulaciones recientes -->
+<!-- Recent Simulations -->
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-clock-history"></i> Últimas Simulaciones
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-clock-history text-primary me-1"></i> Recent Simulations
                 </h5>
             </div>
             <div class="card-body">
                 {% if recent_sessions %}
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Fecha</th>
-                                    <th>Longitud</th>
+                                    <th>Session ID</th>
+                                    <th>Timestamp (UTC)</th>
+                                    <th>Qubits</th>
                                     <th>Eve</th>
-                                    <th>Resultado</th>
+                                    <th>Noise</th>
+                                    <th>Result</th>
                                     <th>QBER</th>
+                                    <th>Secret Key Rate</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for session in recent_sessions %}
                                 <tr>
-                                    <td>#{{ session.id }}</td>
-                                    <td>{{ session.timestamp }}</td>
-                                    <td>{{ session.key_length }} bits</td>
+                                    <td><strong>#{{ session.id }}</strong></td>
+                                    <td class="small text-muted">{{ session.timestamp }}</td>
+                                    <td>{{ session.key_length }} qubits</td>
                                     <td>
                                         {% if session.has_eve %}
-                                            <span class="badge bg-warning">Sí</span>
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Active</span>
                                         {% else %}
-                                            <span class="badge bg-secondary">No</span>
+                                            <span class="badge bg-secondary-subtle text-secondary border">None</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if session.noise_rate %}
+                                            {{ "%.1f"|format(session.noise_rate * 100) }}%
+                                        {% else %}
+                                            0.0%
                                         {% endif %}
                                     </td>
                                     <td>
                                         {% if session.result == 'secure' %}
-                                            <span class="badge bg-success">Segura</span>
+                                            <span class="badge bg-success">Secure</span>
                                         {% else %}
-                                            <span class="badge bg-danger">Comprometida</span>
+                                            <span class="badge bg-danger">Compromised</span>
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if session.error_rate %}
-                                            {{ "%.2f"|format(session.error_rate * 100) }}%
+                                        {% if session.error_rate is not none %}
+                                            <span class="{% if session.error_rate >= 0.11 %}text-danger fw-bold{% else %}text-success fw-semibold{% endif %}">
+                                                {{ "%.2f"|format(session.error_rate * 100) }}%
+                                            </span>
                                         {% else %}
                                             N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if session.secret_key_rate is not none %}
+                                            <span class="badge bg-primary-subtle text-primary border">
+                                                R = {{ "%.3f"|format(session.secret_key_rate) }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -127,9 +149,9 @@
                     </div>
                 {% else %}
                     <div class="alert alert-info mb-0">
-                        <i class="bi bi-info-circle"></i> 
-                        Aún no has ejecutado ninguna simulación. 
-                        <a href="{{ url_for('simulator') }}" class="alert-link">¡Empieza ahora!</a>
+                        <i class="bi bi-info-circle me-1"></i> 
+                        No experiments logged yet. 
+                        <a href="{{ url_for('simulator') }}" class="alert-link">Run your first simulation!</a>
                     </div>
                 {% endif %}
             </div>
@@ -137,3 +159,4 @@
     </div>
 </div>
 {% endblock %}
+

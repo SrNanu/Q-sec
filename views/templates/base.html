@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Q-Sec{% endblock %} - Simulador BB84</title>
+    <title>{% block title %}Q-Sec{% endblock %} - BB84 Quantum Key Distribution Simulator</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -16,43 +16,45 @@
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('home') }}">
+            <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">
                 <i class="bi bi-shield-lock"></i> Q-Sec
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('home') }}">Inicio</a>
+                        <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('simulator') }}">
+                            <i class="bi bi-cpu"></i> Simulator
+                        </a>
                     </li>
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('simulator') }}">Simulador</a>
+                            <a class="nav-link" href="{{ url_for('history') }}">History</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('history') }}">Historial</a>
-                        </li>
-                        <li class="nav-item">
-                            <span class="nav-link">
+                            <span class="nav-link text-white-50">
                                 <i class="bi bi-person-circle"></i> {{ current_user.username }}
                             </span>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+                            <a class="nav-link btn btn-sm btn-outline-light ms-lg-2 px-3" href="{{ url_for('logout') }}">Log Out</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('login') }}">Iniciar Sesión</a>
+                            <a class="nav-link" href="{{ url_for('login') }}">Sign In</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('register') }}">Registrarse</a>
+                            <a class="nav-link btn btn-sm btn-outline-light ms-lg-2 px-3" href="{{ url_for('register') }}">Sign Up</a>
                         </li>
                     {% endif %}
                 </ul>
@@ -80,13 +82,20 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-light text-center text-muted py-4 mt-5">
+    <footer class="bg-light text-center text-muted py-4 mt-5 border-top">
         <div class="container">
-            <p class="mb-0">
-                <i class="bi bi-atom"></i> Q-Sec - Simulador del Protocolo BB84 de Criptografía Cuántica
+            <p class="mb-1">
+                <i class="bi bi-atom text-primary"></i> <strong>Q-Sec</strong> - Interactive BB84 Quantum Key Distribution Simulator
             </p>
-            <small>Desarrollado como TPI para Soporte a Gestión de Datos con Programación Visual</small><br>
-            <small><a href="https://www.linkedin.com/in/santino-cataldi/">Santino Cataldi</a> | <a href="https://www.linkedin.com/in/lucio-nahuel-cosentino-6bb057215/">Lucio Cosentino</a> | <a href="https://www.linkedin.com/in/gasparmartinez12/">Gaspar Martinez</a> | <a href="https://www.linkedin.com/in/tomaswardoloff/">Tomás Wardoloff</a></small>
+            <p class="small text-muted mb-2">
+                Presented at <em>CoNaIISI 2026</em> | Universidad Tecnológica Nacional, Facultad Regional Rosario (UTN FRRo)
+            </p>
+            <small>
+                <a href="https://www.linkedin.com/in/santino-cataldi/" target="_blank" class="text-decoration-none">Santino Cataldi</a> &bull; 
+                <a href="https://www.linkedin.com/in/lucio-nahuel-cosentino-6bb057215/" target="_blank" class="text-decoration-none">Lucio Cosentino</a> &bull; 
+                <a href="https://www.linkedin.com/in/gasparmartinez12/" target="_blank" class="text-decoration-none">Gaspar Martinez</a> &bull; 
+                <a href="https://www.linkedin.com/in/tomaswardoloff/" target="_blank" class="text-decoration-none">Tomás Wardoloff</a>
+            </small>
         </div>
     </footer>
 
@@ -95,3 +104,4 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+

@@ -1,55 +1,94 @@
-{% extends "base.html" %} {% block title %}Inicio{% endblock %} {% block content
-%}
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
 <div class="row">
-  <div class="col-lg-8 mx-auto text-center">
-    <h1 class="display-4 mb-4">
-      <i class="bi bi-shield-lock text-primary"></i> Bienvenido a Q-Sec
+  <div class="col-lg-9 mx-auto text-center">
+    <div class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill mb-3">
+      <i class="bi bi-award"></i> Presented at CoNaIISI 2026 &bull; UTN FRRo
+    </div>
+    <h1 class="display-4 fw-bold mb-3">
+      <i class="bi bi-shield-lock text-primary"></i> Q-Sec: Quantum Cryptography
     </h1>
     <p class="lead text-muted mb-4">
-      Simulador Interactivo del Protocolo de Criptografía Cuántica BB84
+      Interactive BB84 Quantum Key Distribution (QKD) Simulator powered by IBM Qiskit 2.2 & Qiskit-Aer
     </p>
 
-    <div class="card shadow-sm mb-4">
-      <div class="card-body">
-        <h5 class="card-title">¿Qué es BB84?</h5>
-        <p class="card-text text-start">
-          El protocolo BB84 es un método de
-          <strong>distribución cuántica de claves</strong>
-          que permite a dos partes (Alice y Bob) compartir una clave secreta de
-          forma segura, detectando cualquier intento de espionaje gracias a las
-          leyes de la mecánica cuántica.
-        </p>
+    <!-- Guest Mode / Instant Evaluation Banner -->
+    <div class="card shadow-sm border-primary mb-4 text-start">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+          <div>
+            <h5 class="card-title mb-1 text-primary fw-bold">
+              <i class="bi bi-lightning-charge-fill text-warning"></i> Fast Track: Zero-Friction Demo Mode
+            </h5>
+            <p class="card-text text-muted mb-0 small">
+              Test real quantum circuits and photon state collapse instantly. No account required.
+            </p>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('simulator') }}" class="btn btn-primary btn-lg shadow-sm">
+              <i class="bi bi-play-circle-fill"></i> Launch Live Simulator
+            </a>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- 1-Click Preset Experiments -->
+        <div class="row g-2 align-items-center">
+          <div class="col-12 col-md-auto">
+            <span class="small fw-bold text-uppercase text-secondary">Quick Presets:</span>
+          </div>
+          <div class="col-12 col-md">
+            <div class="d-flex flex-wrap gap-2">
+              <a href="{{ url_for('animation', key_length=20, has_eve=0, noise_rate=0.0) }}" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-check-circle"></i> Preset 1: Ideal Channel (QBER &approx; 0%)
+              </a>
+              <a href="{{ url_for('animation', key_length=20, has_eve=1, noise_rate=0.0) }}" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-shield-exclamation"></i> Preset 2: Eavesdropping Attack (QBER &approx; 25%)
+              </a>
+              <a href="{{ url_for('animation', key_length=20, has_eve=0, noise_rate=0.15) }}" class="btn btn-sm btn-outline-warning text-dark">
+                <i class="bi bi-soundwave"></i> Preset 3: Noisy Channel (Depolarizing Noise)
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- Core Features Summary -->
     <div class="row g-3 mb-4">
       <div class="col-md-4">
-        <div class="card h-100">
-          <div class="card-body">
-            <i class="bi bi-gear-fill text-primary fs-1"></i>
-            <h5 class="card-title mt-2">Configura</h5>
-            <p class="card-text">
-              Define la longitud de la clave y si deseas incluir un espía
+        <div class="card h-100 shadow-sm border-0 bg-light">
+          <div class="card-body text-center p-4">
+            <i class="bi bi-sliders text-primary fs-1"></i>
+            <h5 class="card-title mt-3 fw-bold">1. Configure</h5>
+            <p class="card-text text-muted small">
+              Select key length (qubits), toggle eavesdropping (Eve), and calibrate depolarizing channel noise.
             </p>
           </div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card h-100">
-          <div class="card-body">
+        <div class="card h-100 shadow-sm border-0 bg-light">
+          <div class="card-body text-center p-4">
             <i class="bi bi-cpu text-success fs-1"></i>
-            <h5 class="card-title mt-2">Simula</h5>
-            <p class="card-text">Ejecuta la simulación cuántica con Qiskit</p>
+            <h5 class="card-title mt-3 fw-bold">2. Quantum Simulation</h5>
+            <p class="card-text text-muted small">
+              IBM Qiskit 2.2 builds quantum circuits, encodes qubits in rectilinear/diagonal bases, and simulates state collapse.
+            </p>
           </div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="card h-100">
-          <div class="card-body">
-            <i class="bi bi-graph-up text-info fs-1"></i>
-            <h5 class="card-title mt-2">Analiza</h5>
-            <p class="card-text">
-              Visualiza los resultados y detecta espionaje
+        <div class="card h-100 shadow-sm border-0 bg-light">
+          <div class="card-body text-center p-4">
+            <i class="bi bi-graph-up-arrow text-info fs-1"></i>
+            <h5 class="card-title mt-3 fw-bold">3. Security Metrics</h5>
+            <p class="card-text text-muted small">
+              Evaluate Quantum Bit Error Rate (QBER), Shannon binary entropy, and asymptotic Secret Key Rate ($R \ge \max(0, 1 - 2h(p))$).
             </p>
           </div>
         </div>
@@ -59,21 +98,11 @@
     {% if current_user.is_authenticated %}
     <div class="d-grid gap-2 d-md-block">
       <a href="{{ url_for('simulator') }}" class="btn btn-primary btn-lg">
-        <i class="bi bi-play-circle"></i> Iniciar Simulación
+        <i class="bi bi-play-circle"></i> Open Simulator
       </a>
-      <a
-        href="{{ url_for('dashboard') }}"
-        class="btn btn-outline-primary btn-lg"
-      >
-        <i class="bi bi-speedometer2"></i> Mi Dashboard
+      <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-lg">
+        <i class="bi bi-speedometer2"></i> My Dashboard
       </a>
-    </div>
-    {% else %}
-    <div class="alert alert-info" role="alert">
-      <i class="bi bi-info-circle"></i>
-      Para usar el simulador, debes
-      <a href="{{ url_for('register') }}" class="alert-link">registrarte</a> o
-      <a href="{{ url_for('login') }}" class="alert-link">iniciar sesión</a>
     </div>
     {% endif %}
   </div>
@@ -82,52 +111,70 @@
 <div class="row mt-5">
   <div class="col-lg-10 mx-auto">
     <hr />
-    <h3 class="text-center mb-4">¿Cómo funciona el algoritmo de encriptación cuántica BB84?</h3>
+    <h3 class="text-center mb-4 fw-bold">How the BB84 Quantum Key Distribution Protocol Works</h3>
 
-    <div class="card mb-4">
-      <div class="card-body">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body p-4">
         <p>
-          El protocolo BB84, desarrollado en 1984 por Charles Bennett y Gilles Brassard, es el primer método de
-          Distribución Cuántica de Claves (QKD). Su objetivo es permitir que dos partes (tradicionalmente llamadas Alice y Bob)
-          compartan una clave secreta de forma segura, utilizando las propiedades fundamentales de la mecánica cuántica.
+          Proposed in 1984 by Charles H. Bennett and Gilles Brassard, <strong>BB84</strong> is the foundational protocol for
+          <strong>Quantum Key Distribution (QKD)</strong>. It allows two remote parties—traditionally Alice and Bob—to establish
+          a shared, unconditionally secret random key over an insecure quantum channel.
         </p>
 
         <p>
-          A diferencia de los métodos clásicos de encriptación, que se basan en la dificultad matemática de ciertos problemas,
-          el protocolo BB84 garantiza la seguridad gracias a las leyes físicas del mundo cuántico. En particular, se apoya en dos principios:
+          Unlike classical cryptographic algorithms whose security depends on unproven computational complexity assumptions
+          (such as integer factorization or discrete logarithms), BB84 derives information-theoretic security directly from the
+          laws of quantum mechanics:
         </p>
 
-        <ul>
-          <li><strong>Principio de superposición:</strong> permite que una partícula exista en más de un estado a la vez hasta que se la mida.</li>
-          <li><strong>Principio de no clonación:</strong> establece que es imposible copiar exactamente un estado cuántico desconocido.</li>
-        </ul>
+        <div class="row g-3 my-2">
+          <div class="col-md-6">
+            <div class="p-3 border rounded bg-light h-100">
+              <h6 class="fw-bold text-primary"><i class="bi bi-check2-square"></i> Quantum Superposition</h6>
+              <p class="small text-muted mb-0">
+                Qubits prepared in non-orthogonal quantum states cannot be measured without perturbing their state,
+                causing irreversible wave-function collapse.
+              </p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 border rounded bg-light h-100">
+              <h6 class="fw-bold text-primary"><i class="bi bi-slash-circle"></i> No-Cloning Theorem</h6>
+              <p class="small text-muted mb-0">
+                It is mathematically impossible for an eavesdropper (Eve) to create an exact copy of an unknown, arbitrary
+                quantum state without leaving detectable traces.
+              </p>
+            </div>
+          </div>
+        </div>
 
-        <h5 class="mt-3">Etapas del protocolo BB84</h5>
-        <ol>
-          <li>
-            <strong>Generación y envío de fotones:</strong>
-            Alice genera una secuencia aleatoria de bits y, para cada bit, elige al azar una base de polarización (rectilínea o diagonal).
-            Cada combinación de bit y base determina la polarización de un fotón que será enviado a Bob.
+        <h5 class="mt-4 fw-bold">Protocol Execution Stages</h5>
+        <ol class="mb-0">
+          <li class="mb-2">
+            <strong>State Preparation:</strong> Alice generates random classical bits $b_i \in \{0, 1\}$ and randomly chooses
+            either the rectilinear basis $\boxplus$ ($\{|0\rangle, |1\rangle\}$) or diagonal basis $\boxtimes$ ($\{|+\rangle, |-\rangle\}$)
+            to encode each bit into a polarized photon.
+          </li>
+          <li class="mb-2">
+            <strong>Channel Transmission:</strong> Photons travel through the quantum channel, subject to potential environmental
+            depolarizing noise or eavesdropper interception.
+          </li>
+          <li class="mb-2">
+            <strong>Projective Measurement:</strong> Bob independently chooses random measurement bases for each incoming qubit and
+            records the projected classical outcomes.
+          </li>
+          <li class="mb-2">
+            <strong>Sifting Phase:</strong> Over an authenticated classical channel, Alice and Bob openly compare their chosen bases
+            (without revealing the bits). Bits measured with discordant bases are discarded, yielding the <em>sifted key</em>.
+          </li>
+          <li class="mb-2">
+            <strong>Parameter Estimation & QBER:</strong> Alice and Bob sacrifice a random sample of sifted bits to estimate the
+            <strong>Quantum Bit Error Rate (QBER)</strong>. Under an intercept-resend attack, Eve induces an expected QBER of $25\%$.
           </li>
           <li>
-            <strong>Medición de fotones por Bob:</strong>
-            Bob recibe los fotones y mide cada uno eligiendo también una base aleatoria. Si Bob elige la base correcta, obtiene el mismo bit que Alice;
-            si elige la incorrecta, el resultado es aleatorio.
-          </li>
-          <li>
-            <strong>Comunicación clásica y filtrado de bases:</strong>
-            A través de un canal público, Alice y Bob comparan las bases usadas (sin revelar los bits) y conservan solo los bits medidos con bases coincidentes,
-            formando una clave compartida preliminar.
-          </li>
-          <li>
-            <strong>Detección de intrusos (Eve):</strong>
-            Si un tercero intenta interceptar los fotones, sus mediciones alterarán los estados y producirán errores detectables. Comparando una muestra
-            de bits públicamente, Alice y Bob pueden detectar la presencia de un espía.
-          </li>
-          <li>
-            <strong>Corrección y refinamiento de la clave:</strong>
-            Si no se detectan intrusos, se aplican procesos de corrección de errores y privacidad amplificada para generar una clave final segura,
-            que luego puede usarse con algoritmos clásicos de cifrado.
+            <strong>Key Distillation:</strong> If $\text{QBER} < 11\%$ (the Shor-Preskill threshold), error correction and privacy
+            amplification extract an information-theoretically secure final key with positive rate $R \ge 1 - 2h(\text{QBER})$.
+            Otherwise, the protocol is aborted.
           </li>
         </ol>
       </div>
@@ -135,15 +182,15 @@
   </div>
 </div>
 
-<!-- Video explicativo -->
+<!-- Embedded Explanatory Video -->
 <div class="card shadow-sm mb-4">
-  <div class="card-body">
+  <div class="card-body p-3">
     <div class="ratio ratio-16x9">
       <iframe 
         width="560" 
         height="315" 
         src="https://www.youtube.com/embed/7R7dnT2043M?si=63FiQFKD2lykFMWu" 
-        title="YouTube video player" 
+        title="BB84 Quantum Key Distribution Tutorial" 
         frameborder="0" 
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
         referrerpolicy="strict-origin-when-cross-origin" 
@@ -153,35 +200,33 @@
   </div>
 </div>
 
-<!-- Sección informativa adicional -->
-<div class="row mt-5">
+<!-- Architectural Highlights -->
+<div class="row mt-4">
   <div class="col-lg-10 mx-auto">
     <hr />
-    <h3 class="text-center mb-4">Características del Simulador</h3>
+    <h3 class="text-center mb-4 fw-bold">Platform Capabilities</h3>
     <div class="row g-4">
       <div class="col-md-6">
-        <div class="card">
+        <div class="card h-100 shadow-sm border-0">
           <div class="card-body">
-            <h5 class="card-title">
-              <i class="bi bi-lock-fill text-success"></i> Seguridad Cuántica
+            <h5 class="card-title fw-bold">
+              <i class="bi bi-shield-check text-success"></i> Realistic Quantum Noise Modeling
             </h5>
-            <p class="card-text">
-              Simula la transmisión de qubits y la detección automática de
-              espionaje mediante el cálculo de la tasa de error cuántico (QBER).
+            <p class="card-text text-muted">
+              Simulates environmental decoherence using Qiskit Aer depolarizing error channels ($\mathcal{E}(\rho) = (1-p)\rho + \frac{p}{3}\sum \sigma_i \rho \sigma_i$),
+              differentiating between natural channel degradation and active malicious interception.
             </p>
           </div>
         </div>
       </div>
       <div class="col-md-6">
-        <div class="card">
+        <div class="card h-100 shadow-sm border-0">
           <div class="card-body">
-            <h5 class="card-title">
-              <i class="bi bi-bookmark-star-fill text-warning"></i> Historial
-              Completo
+            <h5 class="card-title fw-bold">
+              <i class="bi bi-bar-chart-line text-primary"></i> Information-Theoretic Security Metrics
             </h5>
-            <p class="card-text">
-              Guarda todas tus simulaciones para poder revisarlas más tarde y
-              analizar diferentes escenarios de criptografía cuántica.
+            <p class="card-text text-muted">
+              Computes Shannon binary entropy $h(p)$ and asymptotic secret key rate bounds $R$, verifying whether distilled cryptographic keys can survive one-way classical post-processing.
             </p>
           </div>
         </div>
@@ -190,3 +235,4 @@
   </div>
 </div>
 {% endblock %}
+

@@ -1,22 +1,22 @@
 {% extends "base.html" %}
 
-{% block title %}Registro{% endblock %}
+{% block title %}Sign Up{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-6 col-lg-5 mx-auto">
-        <div class="card shadow">
-            <div class="card-body p-4">
-                <h2 class="card-title text-center mb-4">
-                    <i class="bi bi-person-plus-fill text-primary"></i> Crear Cuenta
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="card-title text-center mb-4 fw-bold">
+                    <i class="bi bi-person-plus-fill text-primary"></i> Create Account
                 </h2>
                 
                 <form method="POST" action="{{ url_for('register') }}">
                     {{ form.hidden_tag() }}
                     
                     <div class="mb-3">
-                        {{ form.username.label(class="form-label") }}
-                        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="Ingresa tu usuario") }}
+                        {{ form.username.label(class="form-label fw-semibold") }}
+                        {{ form.username(class="form-control form-control-lg" + (" is-invalid" if form.username.errors else ""), placeholder="Choose a username") }}
                         {% if form.username.errors %}
                             <div class="invalid-feedback">
                                 {% for error in form.username.errors %}
@@ -24,12 +24,12 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text">Mínimo 3 caracteres</div>
+                        <div class="form-text">Minimum 3 characters</div>
                     </div>
                     
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Ingresa tu contraseña") }}
+                    <div class="mb-4">
+                        {{ form.password.label(class="form-label fw-semibold") }}
+                        {{ form.password(class="form-control form-control-lg" + (" is-invalid" if form.password.errors else ""), placeholder="Choose a strong password") }}
                         {% if form.password.errors %}
                             <div class="invalid-feedback">
                                 {% for error in form.password.errors %}
@@ -37,21 +37,28 @@
                                 {% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text">Mínimo 6 caracteres</div>
+                        <div class="form-text">Minimum 6 characters</div>
                     </div>
                     
                     <div class="d-grid mb-3">
-                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                        {{ form.submit(class="btn btn-primary btn-lg fw-bold") }}
                     </div>
                 </form>
                 
                 <hr>
-                <p class="text-center mb-0">
-                    ¿Ya tienes una cuenta? 
-                    <a href="{{ url_for('login') }}">Inicia sesión aquí</a>
-                </p>
+                <div class="text-center">
+                    <p class="mb-2 text-muted">
+                        Already have an account? 
+                        <a href="{{ url_for('login') }}" class="fw-semibold">Sign in here</a>
+                    </p>
+                    <p class="mb-0 small">
+                        Or jump directly into the 
+                        <a href="{{ url_for('simulator') }}" class="text-decoration-none fw-bold">Guest Simulator &rarr;</a>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
+
