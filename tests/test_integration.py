@@ -116,6 +116,49 @@ class TestBB84Integration:
         assert saved_session.final_key == '10101010'
 
 
+class TestEstadisticasDeUsuario:
+    """get_user_statistics resuelve el conteo en SQL (GROUP BY result) en vez
+    de traer las sesiones a memoria: total tiene que seguir siendo la suma de
+    las categorías, no una cuenta aparte que pueda desincronizarse."""
+
+    def test_el_total_es_la_suma_de_seguras_y_comprometidas(self, app):
+        from business import simulation_controller
+        from datos import session_repository
+
+        user = User(username='estadistico')
+        user.set_password('password123')
+        db.session.add(user)
+        db.session.commit()
+
+        for resultado in ('secure', 'secure', 'compromised'):
+            session_repository.create_session(
+                user_id=user.id, key_length=64, has_eve=False, result=resultado,
+            )
+
+        stats = simulation_controller.get_user_statistics(user.id)
+        assert stats['total_simulations'] == 3
+        assert stats['secure_simulations'] == 2
+        assert stats['compromised_simulations'] == 1
+        assert stats['total_simulations'] == stats['secure_simulations'] + stats['compromised_simulations']
+        assert stats['success_rate'] == round(2 / 3 * 100, 2)
+
+    def test_sin_simulaciones_no_divide_por_cero(self, app):
+        from business import simulation_controller
+
+        user = User(username='sin_simulaciones')
+        user.set_password('password123')
+        db.session.add(user)
+        db.session.commit()
+
+        stats = simulation_controller.get_user_statistics(user.id)
+        assert stats == {
+            'total_simulations': 0,
+            'secure_simulations': 0,
+            'compromised_simulations': 0,
+            'success_rate': 0.0,
+        }
+
+
 class TestResultadosIntermediosPersistidos:
     """Cada sesion guarda los bits de la clave tamizada y el tamaño de la muestra."""
 

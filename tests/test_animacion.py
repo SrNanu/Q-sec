@@ -51,3 +51,16 @@ class TestDatosDeLaAnimacion:
         html = logueado.get('/animation?key_length=64&has_eve=0').data.decode()
         assert 'Math.random()' not in html
         assert 'data.alice_bits' in html and 'data.bob_bits' in html
+
+    def test_la_animacion_dibuja_un_foton_por_qubit_real(self, logueado):
+        """Regresión: con key_length chico, un numPhotons fijo (12) dejaba
+        fotones sin interceptar aunque Eve interceptara todos los qubits."""
+        html = logueado.get('/animation?key_length=64&has_eve=0').data.decode()
+        assert 'const numPhotons = 12;' not in html
+        assert "(data.alice_bits || []).length" in html
+
+    def test_con_espia_todos_los_fotones_se_marcan_interceptados(self, logueado):
+        """El backend hace que Eve intercepte cada qubit; la animación no
+        puede decidir lo contrario según cuántos fotones dibuja."""
+        html = logueado.get('/animation?key_length=64&has_eve=1').data.decode()
+        assert 'const intercepted = hasEve;' in html

@@ -39,6 +39,10 @@ class TestUrlDeBaseDeDatos:
         for url in ('postgresql+psycopg2://u:p@host/db', 'postgresql+psycopg://u:p@host/db'):
             assert normalizar_url(url) == url
 
+    def test_corrige_el_esquema_con_driver_explicito(self):
+        """Algunas herramientas entregan 'postgres+driver://', no sólo 'postgres://'."""
+        assert normalizar_url('postgres+psycopg2://u:p@host/db') == 'postgresql+psycopg2://u:p@host/db'
+
     def test_es_idempotente(self):
         una = normalizar_url('postgres://u:p@host/db')
         assert normalizar_url(una) == una
@@ -74,6 +78,11 @@ class TestConfiguracionDeProduccion:
         monkeypatch.setattr(ProduccionConfig, 'SECRET_KEY', 'x')
         assert ProduccionConfig().SESSION_COOKIE_SECURE is True
 
+    def test_la_cookie_de_recordarme_tambien_va_por_https(self, monkeypatch):
+        """Flask-Login tiene su propio flag, independiente de SESSION_COOKIE_SECURE."""
+        monkeypatch.setattr(ProduccionConfig, 'SECRET_KEY', 'x')
+        assert ProduccionConfig().REMEMBER_COOKIE_SECURE is True
+
 
 class TestConfiguracionDeTesting:
 
@@ -97,6 +106,12 @@ class TestSeleccionDeEntorno:
     def test_se_puede_pedir_testing(self):
         assert obtener_config('testing') is TestingConfig
 
+    def test_production_es_insensible_a_mayusculas_y_espacios(self, monkeypatch):
+        """Una variante de capitalización no puede caer en desarrollo en silencio."""
+        monkeypatch.setattr(ProduccionConfig, 'SECRET_KEY', 'una-clave-de-verdad')
+        for variante in ('PRODUCTION', 'Production', ' production '):
+            assert type(obtener_config(variante)) is ProduccionConfig
+
 
 class TestFactoryDeAplicacion:
 
@@ -116,8 +131,14 @@ class TestFactoryDeAplicacion:
 
     def test_puede_construirse_sin_crear_tablas(self):
         """crear_tablas=False evita que importar la app escriba en disco."""
+        from sqlalchemy import inspect
+
         from app import create_app
-        assert create_app(TestingConfig, crear_tablas=False) is not None
+        from datos import db
+
+        app = create_app(TestingConfig, crear_tablas=False)
+        with app.app_context():
+            assert inspect(db.engine).get_table_names() == []
 
 
 class TestAislamientoDeLaSuite:
@@ -131,19 +152,23 @@ class TestAislamientoDeLaSuite:
 
     def test_ningun_test_usa_la_instancia_global_de_la_app(self):
         """Los tests tienen que pedir la app por fixture, no importarla."""
+        import ast
         import pathlib
-        import re
 
         directorio = pathlib.Path(__file__).parent
-        patron = re.compile(r'^from app import .*\bapp\b', re.MULTILINE)
 
         culpables = []
         for archivo in directorio.glob('test_*.py'):
-            texto = archivo.read_text(encoding='utf-8')
-            # create_app es la factory y sí se puede importar
-            for linea in patron.findall(texto):
-                if 'create_app' not in linea:
-                    culpables.append(f'{archivo.name}: {linea}')
+            arbol = ast.parse(archivo.read_text(encoding='utf-8'), filename=archivo.name)
+            for nodo in ast.walk(arbol):
+                if not isinstance(nodo, ast.ImportFrom) or nodo.module != 'app':
+                    continue
+                # create_app es la factory y sí se puede importar; lo que no se
+                # puede es el nombre exacto 'app' (con o sin alias), sin
+                # importar en qué posición ni junto a qué otros nombres venga.
+                for nombre in nodo.names:
+                    if nombre.name == 'app':
+                        culpables.append(f'{archivo.name}:{nodo.lineno}: from app import ... app')
 
         detalle = '\n'.join(culpables)
         assert not culpables, (

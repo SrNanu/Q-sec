@@ -2,12 +2,10 @@
 Tests para la simulación del protocolo BB84
 """
 import pytest
-import sys
-import os
 
-# Agregar el directorio TPI al path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+# pythonpath = . en pytest.ini ya resuelve estos imports; un sys.path.insert
+# manual acá quedaba como único test que seguía pasando si esa configuración
+# se rompía, enmascarando el fallo real del resto de la suite.
 # Sin try/except: si el modulo no se puede importar, la suite tiene que fallar.
 # Antes un ImportError salteaba estos tests en silencio y el CI quedaba en verde
 # aunque la capa de simulacion estuviera rota.

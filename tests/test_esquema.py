@@ -113,3 +113,43 @@ class TestBaseExistente:
         app = _app_sobre(tmp_path / 'nueva.db')
         with app.app_context():
             assert agregar_columnas_faltantes(db.engine, db.metadata) == []
+
+
+class TestEnsancheDeColumnas:
+    """SQLite ignora la longitud de un VARCHAR, pero Postgres/MySQL la
+    imponen: sin ensanchar password_hash a 255, una base creada antes de ese
+    cambio de modelo rechazaría el hash scrypt (~162 caracteres) de Werkzeug.
+    """
+
+    def test_detecta_un_varchar_que_quedo_corto(self):
+        from sqlalchemy import String
+
+        from datos.esquema import _es_ensanche_seguro
+
+        columna_en_base = {'name': 'password_hash', 'type': String(128)}
+        columna_modelo = db.Column('password_hash', String(255))
+        assert _es_ensanche_seguro(columna_en_base, columna_modelo)
+
+    def test_no_angosta_ni_toca_un_tipo_igual_o_mas_chico(self):
+        from sqlalchemy import String
+
+        from datos.esquema import _es_ensanche_seguro
+
+        columna_en_base = {'name': 'password_hash', 'type': String(255)}
+        assert not _es_ensanche_seguro(columna_en_base, db.Column('x', String(255)))
+        assert not _es_ensanche_seguro(columna_en_base, db.Column('x', String(80)))
+
+    def test_no_toca_una_base_sqlite_aunque_el_varchar_haya_quedado_corto(self, tmp_path):
+        """En SQLite ensanchar no es necesario ni posible: se ignora."""
+        ruta = tmp_path / 'qsec.db'
+        _base_anterior(ruta)
+
+        app = _app_sobre(ruta)
+
+        with app.app_context():
+            columnas = inspect(db.engine).get_columns('user')
+            password_hash = next(c for c in columnas if c['name'] == 'password_hash')
+            # SQLAlchemy refleja el tipo declarado en el CREATE TABLE original
+            assert password_hash['type'].length == 128
+            # pero un usuario nuevo, con un hash largo, se puede crear sin error
+            assert user_repository.create_user('nuevo', 'password123') is not None
