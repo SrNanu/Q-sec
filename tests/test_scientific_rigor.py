@@ -103,3 +103,18 @@ class TestGuestModeZeroFriction:
         assert data['session']['is_guest'] is True
         assert data['session']['id'] is None
         assert 'secret_key_rate' in data['simulation_details']
+
+    def test_guest_can_access_architecture_page(self, client):
+        """GET /architecture returns 200 with embedded diagram viewer"""
+        resp = client.get('/architecture')
+        assert resp.status_code == 200
+        assert b'System Architecture' in resp.data
+        assert b'/architecture/diagram' in resp.data
+
+    def test_guest_can_access_architecture_diagram_artifact(self, client):
+        """GET /architecture/diagram serves the standalone Archify artifact"""
+        resp = client.get('/architecture/diagram')
+        assert resp.status_code == 200
+        assert b'<!DOCTYPE html>' in resp.data
+        assert b'Q-Sec' in resp.data
+

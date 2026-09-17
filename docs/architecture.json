@@ -1,0 +1,291 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Q-Sec: Quantum Key Distribution System Architecture",
+    "subtitle": "High-Level 3-Layer Architecture with Qiskit Aer Simulation and Physical Noise Modeling",
+    "output": "architecture.html",
+    "quality_profile": "showcase",
+    "visual_preset": "signal-flow",
+    "animation": "trace",
+    "views": [
+      {
+        "id": "quantum-pipeline",
+        "label": "Quantum Simulation Pipeline",
+        "focus": ["users", "routes", "controller", "bb84_sim", "noise_engine", "qmetrics", "qiskit_aer"],
+        "note": "Trace user simulation requests through state preparation, channel transit, and key rate distillation."
+      },
+      {
+        "id": "security-analysis",
+        "label": "Channel Noise & Eavesdropping",
+        "focus": ["bb84_sim", "noise_engine", "qmetrics", "qiskit_aer"],
+        "note": "Isolate physical depolarizing noise, Eve intercept-resend attacks, and QBER thresholding."
+      },
+      {
+        "id": "persistence-tier",
+        "label": "Data & Runtime Migrations",
+        "focus": ["routes", "controller", "session_repo", "orm_models", "migrator", "database"],
+        "note": "Follow authenticated session persistence, repository encapsulation, and non-destructive schema migrations."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "users",
+      "type": "external",
+      "label": "Web Clients",
+      "sublabel": "Guest & Authenticated",
+      "tag": "HTTP / JSON",
+      "pos": [45, 240],
+      "size": [135, 62]
+    },
+    {
+      "id": "routes",
+      "type": "frontend",
+      "brand": "flask",
+      "label": "Flask Presentation",
+      "sublabel": "views/routes.py",
+      "tag": "Routes & API Endpoints",
+      "pos": [260, 180],
+      "size": [145, 62]
+    },
+    {
+      "id": "templates",
+      "type": "frontend",
+      "label": "Jinja2 UI & SVG",
+      "sublabel": "views/templates",
+      "tag": "Photon Visualizer",
+      "pos": [260, 320],
+      "size": [145, 62]
+    },
+    {
+      "id": "controller",
+      "type": "backend",
+      "brand": "python",
+      "label": "Simulation Controller",
+      "sublabel": "simulation_controller.py",
+      "tag": "Zero-Friction Orchestrator",
+      "pos": [490, 240],
+      "size": [160, 64]
+    },
+    {
+      "id": "bb84_sim",
+      "type": "backend",
+      "brand": "python",
+      "label": "BB84 Quantum Core",
+      "sublabel": "bb84_simulation.py",
+      "tag": "X & H Basis Preparation",
+      "pos": [740, 140],
+      "size": [160, 64]
+    },
+    {
+      "id": "noise_engine",
+      "type": "security",
+      "label": "Channel & Eve Attack",
+      "sublabel": "Depolarizing Noise",
+      "tag": "NoiseModel + Intercept",
+      "pos": [740, 275],
+      "size": [160, 64]
+    },
+    {
+      "id": "qmetrics",
+      "type": "backend",
+      "label": "Information Theory",
+      "sublabel": "Shannon & Key Rate",
+      "tag": "h(p) & 11% Cutoff",
+      "pos": [740, 410],
+      "size": [160, 64]
+    },
+    {
+      "id": "qiskit_aer",
+      "type": "cloud",
+      "label": "Qiskit Aer Backend",
+      "sublabel": "AerSimulator",
+      "tag": "Quantum Circuit Execution",
+      "pos": [1000, 140],
+      "size": [155, 64]
+    },
+    {
+      "id": "session_repo",
+      "type": "database",
+      "brand": "python",
+      "label": "Session Repository",
+      "sublabel": "session_repository.py",
+      "tag": "Audit & Session CRUD",
+      "pos": [490, 430],
+      "size": [160, 62]
+    },
+    {
+      "id": "orm_models",
+      "type": "database",
+      "label": "SQLAlchemy ORM",
+      "sublabel": "datos/models.py",
+      "tag": "User & Session Models",
+      "pos": [740, 550],
+      "size": [160, 64]
+    },
+    {
+      "id": "migrator",
+      "type": "database",
+      "label": "Schema Migrator",
+      "sublabel": "datos/esquema.py",
+      "tag": "Auto DDL & Widening",
+      "pos": [1000, 420],
+      "size": [155, 62]
+    },
+    {
+      "id": "database",
+      "type": "database",
+      "brand": "sqlite",
+      "label": "Relational Storage",
+      "sublabel": "SQLite / PostgreSQL",
+      "tag": "instance/qsec.db",
+      "pos": [1000, 550],
+      "size": [155, 64]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Presentation Layer (views/)",
+      "wraps": ["routes", "templates"],
+      "pad": 18
+    },
+    {
+      "kind": "region",
+      "label": "Business / Quantum Domain Layer (business/)",
+      "wraps": ["controller", "bb84_sim", "noise_engine", "qmetrics"],
+      "pad": 18
+    },
+    {
+      "kind": "security-group",
+      "label": "Quantum Simulation Runtime",
+      "wraps": ["qiskit_aer"],
+      "pad": 16
+    },
+    {
+      "kind": "region",
+      "label": "Data & Persistence Layer (datos/)",
+      "wraps": ["session_repo", "orm_models", "migrator", "database"],
+      "pad": 18
+    }
+  ],
+  "connections": [
+    {
+      "id": "users-to-routes",
+      "from": "users",
+      "to": "routes",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "routes-to-templates",
+      "from": "routes",
+      "to": "templates",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "routes-to-controller",
+      "from": "routes",
+      "to": "controller",
+      "label": "run simulation",
+      "variant": "emphasis"
+    },
+    {
+      "id": "controller-to-bb84",
+      "from": "controller",
+      "to": "bb84_sim",
+      "label": "dispatch protocol",
+      "variant": "emphasis"
+    },
+    {
+      "id": "bb84-to-noise",
+      "from": "bb84_sim",
+      "to": "noise_engine",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "noise-to-metrics",
+      "from": "noise_engine",
+      "to": "qmetrics",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "bb84-to-aer",
+      "from": "bb84_sim",
+      "to": "qiskit_aer",
+      "label": "execute circuits",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "controller-to-sessionrepo",
+      "from": "controller",
+      "to": "session_repo",
+      "label": "save session",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [570, 340]
+    },
+    {
+      "id": "sessionrepo-to-models",
+      "from": "session_repo",
+      "to": "orm_models",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "models-to-db",
+      "from": "orm_models",
+      "to": "database",
+      "label": "SQLAlchemy SQL",
+      "variant": "emphasis"
+    },
+    {
+      "id": "migrator-to-db",
+      "from": "migrator",
+      "to": "database",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Presentation Tier",
+      "items": [
+        "Flask routes provide public guest endpoints and authenticated dashboards",
+        "Zero-friction Guest Mode allows immediate execution without account creation",
+        "Interactive SVG visualization of photon pulses and reconciliation in real time"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Quantum Business Logic",
+      "items": [
+        "BB84 protocol with Pauli-X and Hadamard state preparation (|0>, |1>, |+>, |->)",
+        "Physical depolarizing noise channel and Eve intercept-resend attack via Qiskit Aer",
+        "Devetak-Winter asymptotic secret key rate with rigorous 11% QBER threshold cutoff"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Data Integrity Tier",
+      "items": [
+        "Clean repository pattern separating ORM models from simulation business logic",
+        "Runtime non-destructive schema migrations for SQLite and PostgreSQL",
+        "Audit log tracking QBER, noise rates, and distilled secret key lengths"
+      ]
+    }
+  ]
+}

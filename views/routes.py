@@ -3,7 +3,8 @@ Rutas de la aplicación (Capa de Presentación)
 Esta capa NO accede directamente a la base de datos
 Solo usa la capa de negocio (business)
 """
-from flask import render_template, redirect, url_for, flash, request, jsonify
+import os
+from flask import render_template, redirect, url_for, flash, request, jsonify, send_from_directory
 from flask_login import login_user, logout_user, login_required, current_user
 
 from views.forms import RegisterForm, LoginForm, SimulationForm
@@ -163,3 +164,16 @@ def configure_routes(app):
         
         except Exception as e:
             return jsonify({'success': False, 'message': str(e)}), 500
+
+    @app.route('/architecture')
+    def architecture():
+        """Interactive System Architecture page"""
+        return render_template('architecture.html')
+
+
+    @app.route('/architecture/diagram')
+    def architecture_diagram():
+        """Serves the standalone Archify interactive diagram artifact"""
+        docs_dir = os.path.join(app.root_path, 'docs')
+        return send_from_directory(docs_dir, 'architecture.html')
+
