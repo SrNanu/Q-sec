@@ -30,7 +30,7 @@
         {% endif %}
 
         <!-- 1-Click Preset Experiments -->
-        <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                     <h5 class="card-title mb-0 fw-bold">
@@ -58,9 +58,9 @@
                     <div class="col-md-4">
                         <button type="button" class="btn btn-outline-warning w-100 text-start p-3 h-100 preset-btn"
                                 onclick="applyPreset(20, false, 0.15)">
-                            <div class="fw-bold mb-1 text-dark"><i class="bi bi-soundwave"></i> Preset 3: Noisy Channel</div>
+                            <div class="fw-bold mb-1"><i class="bi bi-soundwave"></i> Preset 3: Noisy Channel</div>
                             <small class="text-muted d-block">20 qubits, No Eve, Noise = 0.15</small>
-                            <span class="badge bg-warning-subtle text-dark mt-2">Decoherence &bull; QBER &gt; 11%</span>
+                            <span class="badge bg-warning-subtle text-warning mt-2">Decoherence &bull; QBER &gt; 11%</span>
                         </button>
                     </div>
                 </div>
@@ -68,7 +68,7 @@
         </div>
 
         <!-- Simulator Configuration Form -->
-        <div class="card shadow-sm border-0 mb-4">
+        <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
             <div class="card-body p-4">
                 <h5 class="card-title fw-bold mb-3">
                     <i class="bi bi-sliders"></i> Simulation Parameters
@@ -94,7 +94,7 @@
                         </div>
                     </div>
                     
-                    <div class="mb-4 p-3 bg-light rounded border">
+                    <div class="mb-4 p-3 bg-body-secondary rounded-3 border">
                         <div class="form-check form-switch fs-5">
                             {{ form.has_eve(class="form-check-input", id="has_eve") }}
                             <label class="form-check-label fw-semibold fs-6 pt-1" for="has_eve">
@@ -106,7 +106,7 @@
                         </div>
                     </div>
 
-                    <div class="mb-4 p-3 bg-light rounded border">
+                    <div class="mb-4 p-3 bg-body-secondary rounded-3 border">
                         <label for="noise_rate" class="form-label fw-semibold">
                             Channel Depolarizing Noise Rate ($\epsilon$)
                         </label>
