@@ -1,16 +1,23 @@
-/* Estilos personalizados para Q-Sec */
+/* Q-Sec: Quantum Key Distribution Platform Styles */
 
 :root {
     --primary-color: #0d6efd;
     --success-color: #198754;
     --danger-color: #dc3545;
     --info-color: #0dcaf0;
+    --warning-color: #ffc107;
+    --transition-speed: 0.25s;
 }
 
-body {
+/* Base Layout & Theme Transitions */
+html, body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+body {
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
 }
 
 main {
@@ -19,63 +26,48 @@ main {
 
 /* Navbar */
 .navbar-brand {
-    font-weight: bold;
-    font-size: 1.5rem;
+    font-weight: 700;
+    font-size: 1.45rem;
+    letter-spacing: -0.5px;
 }
 
 /* Cards */
 .card {
-    border: none;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed), background-color var(--transition-speed), border-color var(--transition-speed);
 }
 
 .card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
 }
 
-/* Botones */
+/* Buttons */
 .btn {
-    transition: all 0.2s;
+    transition: all var(--transition-speed);
+    font-weight: 500;
 }
 
 .btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Tablas */
+/* Badges */
+.badge {
+    padding: 0.45em 0.75em;
+    font-weight: 600;
+}
+
+/* Tables */
 .table {
     border-radius: 8px;
     overflow: hidden;
 }
 
-.table thead {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-/* Badges */
-.badge {
-    padding: 0.5em 0.75em;
-}
-
-/* Footer */
-footer {
-    margin-top: auto;
-}
-
-/* Formularios */
-.form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-}
-
-/* Animaciones */
+/* Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(8px);
     }
     to {
         opacity: 1;
@@ -84,24 +76,162 @@ footer {
 }
 
 .card, .alert {
-    animation: fadeIn 0.3s ease-in;
+    animation: fadeIn 0.25s ease-out;
 }
 
-/* Estilos para código */
+/* Code Blocks */
 code {
-    background-color: #f8f9fa;
+    background-color: rgba(13, 110, 253, 0.08);
     padding: 2px 6px;
-    border-radius: 3px;
+    border-radius: 4px;
     color: #d63384;
+    font-size: 0.88em;
 }
 
-/* Responsive */
+/* ========================================================== */
+/* DARK MODE SPECIFIC REFINEMENTS                             */
+/* ========================================================== */
+
+[data-bs-theme="dark"] {
+    --bs-body-bg: #0b0f19;
+    --bs-body-color: #e2e8f0;
+    --bs-tertiary-bg: #151d2f;
+    --bs-border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] body {
+    background-color: #0b0f19;
+    color: #e2e8f0;
+}
+
+/* Dark mode navbar */
+[data-bs-theme="dark"] .navbar.bg-primary {
+    background-color: #0f172a !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Dark mode cards */
+[data-bs-theme="dark"] .card {
+    background-color: #131b2e;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #f1f5f9;
+}
+
+[data-bs-theme="dark"] .card.bg-light {
+    background-color: #172138 !important;
+}
+
+/* Dark mode footer */
+[data-bs-theme="dark"] footer.bg-light {
+    background-color: #0a0e18 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] footer a {
+    color: #60a5fa !important;
+}
+
+/* Dark mode code blocks */
+[data-bs-theme="dark"] code {
+    background-color: #1e293b;
+    color: #f472b6;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Form controls in dark mode */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: #151d2f;
+    border-color: #2d3748;
+    color: #f8fafc;
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    background-color: #182238;
+    border-color: #38bdf8;
+    color: #f8fafc;
+    box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25);
+}
+
+[data-bs-theme="dark"] .input-group-text {
+    background-color: #1a233a;
+    border-color: #2d3748;
+    color: #94a3b8;
+}
+
+/* Table styling in dark mode */
+[data-bs-theme="dark"] .table {
+    --bs-table-bg: #131b2e;
+    --bs-table-color: #e2e8f0;
+    --bs-table-border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-bs-theme="dark"] .table thead th {
+    background-color: #1e293b;
+    color: #f8fafc;
+}
+
+/* Quantum Visualizer in dark mode */
+[data-bs-theme="dark"] .quantum-exchange-box,
+[data-bs-theme="dark"] div[style*="linear-gradient(135deg, #f8f9fa"] {
+    background: linear-gradient(135deg, #131b2e 0%, #0d1322 100%) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-bs-theme="dark"] #transmission-svg {
+    background: #090d16 !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-bs-theme="dark"] .animation-step {
+    background-color: #131b2e !important;
+    color: #f8fafc;
+    border-left-color: #38bdf8 !important;
+}
+
+[data-bs-theme="dark"] .animation-step.completed {
+    background-color: #0b221d !important;
+    border-left-color: #10b981 !important;
+}
+
+/* Preset buttons text in dark mode */
+[data-bs-theme="dark"] .text-dark {
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-warning .text-dark {
+    color: #fde047 !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-warning-subtle.text-dark {
+    background-color: rgba(234, 179, 8, 0.2) !important;
+    color: #fef08a !important;
+}
+
+/* Modals & Alerts in dark mode */
+[data-bs-theme="dark"] .alert-info {
+    background-color: rgba(13, 202, 240, 0.12);
+    border-color: rgba(13, 202, 240, 0.25);
+    color: #7dd3fc;
+}
+
+[data-bs-theme="dark"] .alert-success {
+    background-color: rgba(25, 135, 84, 0.12);
+    border-color: rgba(25, 135, 84, 0.25);
+    color: #86efac;
+}
+
+[data-bs-theme="dark"] .alert-danger {
+    background-color: rgba(220, 53, 69, 0.15);
+    border-color: rgba(220, 53, 69, 0.3);
+    color: #fca5a5;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
     .navbar-brand {
-        font-size: 1.2rem;
-    }
-    
-    h1, .display-4 {
-        font-size: 2rem;
+        font-size: 1.25rem;
     }
 }
