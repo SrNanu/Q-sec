@@ -37,7 +37,7 @@
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark qsec-navbar shadow-sm sticky-top">
+    <nav class="navbar navbar-expand-lg qsec-navbar shadow-sm sticky-top">
         <div class="container">
             <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ url_for('home') }}">
                 <span class="brand-icon"><i class="bi bi-shield-lock-fill text-warning"></i></span>
@@ -71,25 +71,25 @@
                             <a class="nav-link" href="{{ url_for('history') }}">History</a>
                         </li>
                         <li class="nav-item">
-                            <span class="nav-link text-white-50">
+                            <span class="nav-link text-muted">
                                 <i class="bi bi-person-circle"></i> {{ current_user.username }}
                             </span>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link btn btn-sm btn-outline-light ms-lg-2 px-3" href="{{ url_for('logout') }}">Log Out</a>
+                            <a class="btn btn-sm btn-outline-secondary ms-lg-2 px-3" href="{{ url_for('logout') }}">Log Out</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('login') }}">Sign In</a>
+                            <a class="nav-link px-3" href="{{ url_for('login') }}">Sign In</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link btn btn-sm btn-outline-light ms-lg-2 px-3" href="{{ url_for('register') }}">Sign Up</a>
+                            <a class="btn btn-sm btn-primary ms-lg-2 px-3 fw-semibold shadow-sm" href="{{ url_for('register') }}">Sign Up</a>
                         </li>
                     {% endif %}
                     
                     <!-- Dark / Light Mode Toggle -->
                     <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-                        <button id="theme-toggle" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-1 d-flex align-items-center gap-1.5" type="button" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
+                        <button id="theme-toggle" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 d-flex align-items-center gap-1.5" type="button" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
                             <i id="theme-icon" class="bi bi-moon-stars-fill"></i>
                             <span id="theme-text" class="small">Dark</span>
                         </button>
