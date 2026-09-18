@@ -1,64 +1,72 @@
 {% extends "base.html" %}
 
-{% block title %}Sign Up{% endblock %}
+{% block title %}Create Account - Q-Sec{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 col-lg-5 mx-auto">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4 p-md-5">
-                <h2 class="card-title text-center mb-4 fw-bold">
-                    <i class="bi bi-person-plus-fill text-primary"></i> Create Account
-                </h2>
+<div class="row py-4">
+    <div class="col-md-7 col-lg-5 mx-auto">
+        <div class="qsec-glass-card p-4 p-md-5 border-gradient-purple shadow-lg">
+            <div class="text-center mb-4">
+                <div class="brand-icon-wrapper mx-auto mb-3" style="width: 52px; height: 52px; background: rgba(123, 97, 255, 0.15); border-color: rgba(123, 97, 255, 0.3);">
+                    <i class="bi bi-person-plus-fill text-info fs-3"></i>
+                </div>
+                <h3 class="fw-bold mb-1">Create Quantum Profile</h3>
+                <p class="text-muted small">Register to save custom parameters and export research logs</p>
+            </div>
+            
+            <form method="POST" action="{{ url_for('register') }}">
+                {{ form.hidden_tag() }}
                 
-                <form method="POST" action="{{ url_for('register') }}">
-                    {{ form.hidden_tag() }}
-                    
-                    <div class="mb-3">
-                        {{ form.username.label(class="form-label fw-semibold") }}
-                        {{ form.username(class="form-control form-control-lg" + (" is-invalid" if form.username.errors else ""), placeholder="Choose a username") }}
-                        {% if form.username.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.username.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <div class="form-text">Minimum 3 characters</div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        {{ form.password.label(class="form-label fw-semibold") }}
-                        {{ form.password(class="form-control form-control-lg" + (" is-invalid" if form.password.errors else ""), placeholder="Choose a strong password") }}
-                        {% if form.password.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.password.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <div class="form-text">Minimum 6 characters</div>
-                    </div>
-                    
-                    <div class="d-grid mb-3">
-                        {{ form.submit(class="btn btn-primary btn-lg fw-bold") }}
-                    </div>
-                </form>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-uppercase font-monospace text-muted">
+                        <i class="bi bi-person me-1"></i> {{ form.username.label.text }}
+                    </label>
+                    {{ form.username(class="form-control form-control-lg font-monospace" + (" is-invalid" if form.username.errors else ""), placeholder="Choose username") }}
+                    {% if form.username.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.username.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text small font-monospace">Minimum 3 alphanumeric characters</div>
+                </div>
                 
-                <hr>
-                <div class="text-center">
-                    <p class="mb-2 text-muted">
-                        Already have an account? 
-                        <a href="{{ url_for('login') }}" class="fw-semibold">Sign in here</a>
-                    </p>
-                    <p class="mb-0 small">
-                        Or jump directly into the 
-                        <a href="{{ url_for('simulator') }}" class="text-decoration-none fw-bold">Guest Simulator &rarr;</a>
-                    </p>
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-uppercase font-monospace text-muted">
+                        <i class="bi bi-shield-lock me-1"></i> {{ form.password.label.text }}
+                    </label>
+                    {{ form.password(class="form-control form-control-lg font-monospace" + (" is-invalid" if form.password.errors else ""), placeholder="Choose password") }}
+                    {% if form.password.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text small font-monospace">Minimum 6 characters for session integrity</div>
+                </div>
+                
+                <div class="d-grid mb-3">
+                    {{ form.submit(class="btn btn-primary btn-lg fw-bold shadow-sm") }}
+                </div>
+            </form>
+            
+            <hr class="border-secondary my-4 opacity-25">
+
+            <div class="text-center">
+                <p class="mb-2 small text-muted">
+                    Already registered? 
+                    <a href="{{ url_for('login') }}" class="fw-bold text-decoration-none">Sign in here &rarr;</a>
+                </p>
+                <div class="p-2.5 rounded bg-body-tertiary border mt-3">
+                    <span class="small text-muted d-block mb-1">Testing or benchmarking?</span>
+                    <a href="{{ url_for('simulator') }}" class="btn btn-sm btn-outline-primary fw-semibold w-100">
+                        <i class="bi bi-lightning-charge"></i> Zero-Barrier Guest Simulator
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
-

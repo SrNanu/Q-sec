@@ -1,206 +1,317 @@
 {% extends "base.html" %}
 
-{% block title %}BB84 Quantum Simulation{% endblock %}
+{% block title %}BB84 Quantum Simulation Telemetry - Q-Sec{% endblock %}
 
 {% block content %}
-<div class="container-fluid d-flex align-items-center justify-content-center py-4" style="min-height: 85vh;">
-    <div class="col-12 col-lg-11">
-        <div class="card shadow-lg border-0">
-            <div class="card-body p-4 p-md-5">
-                <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+<div class="container-fluid py-3">
+    <div class="col-12 col-xl-11 mx-auto">
+        <!-- Telemetry Header -->
+        <div class="card p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace">
+                            <i class="bi bi-activity"></i> Telemetry Station
+                        </span>
+                        <span id="qubit-badge" class="badge bg-secondary-subtle text-secondary border font-monospace">
+                            N = ... Qubits
+                        </span>
+                    </div>
                     <h2 class="mb-0 fw-bold">
-                        <i class="bi bi-lightning-fill text-warning"></i> BB84 Protocol in Action
+                        <i class="bi bi-lightning-fill text-warning"></i> BB84 Quantum Channel Visualizer
                     </h2>
-                    <span id="channel-badge" class="badge bg-info-subtle text-info border px-3 py-2">
-                        Simulating Quantum Exchange...
+                </div>
+
+                <!-- Simulation Outcome Badge & Speed Controls -->
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <!-- Animation Speed Selector -->
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Playback speed">
+                        <button type="button" class="btn btn-outline-secondary font-monospace" id="speed-1x" onclick="setAnimationSpeed(1, this)">1x</button>
+                        <button type="button" class="btn btn-outline-secondary font-monospace active" id="speed-2x" onclick="setAnimationSpeed(2, this)">2x</button>
+                        <button type="button" class="btn btn-outline-secondary font-monospace" id="speed-4x" onclick="setAnimationSpeed(4, this)">4x</button>
+                        <button type="button" class="btn btn-outline-primary font-monospace" id="speed-skip" onclick="skipAnimation()">Skip &rarr;</button>
+                    </div>
+
+                    <span id="channel-badge" class="badge bg-info-subtle text-info border px-3 py-2 font-monospace">
+                        Executing Qiskit Aer Circuit...
                     </span>
                 </div>
+            </div>
+        </div>
 
-                <!-- Quantum Exchange Visualizer -->
-                <div class="mb-4 p-4 rounded-3 border" style="background: var(--bs-tertiary-bg, #f8f9fa);">
-                    <div class="row align-items-center">
-                        <!-- Alice -->
-                        <div class="col-md-3 text-center">
-                            <h5 class="fw-bold"><i class="bi bi-person-circle text-primary"></i> Alice</h5>
-                            <p class="text-muted small mb-2">Prepares & transmits qubits</p>
-                            <div id="alice-bits-display" class="d-flex flex-wrap gap-2 justify-content-center" style="min-height: 100px;">
-                                <span class="badge bg-secondary">Awaiting transmission...</span>
-                            </div>
-                            <small class="text-muted mt-2 d-block">Green = 1 | Red = 0</small>
+        <!-- Quantum Optical Bench Visualizer -->
+        <div class="optical-bench mb-4">
+            <div class="row align-items-center g-3">
+                <!-- Alice's Transmitter -->
+                <div class="col-lg-3 text-center">
+                    <div class="station-card">
+                        <span class="station-badge-inline bg-primary-subtle text-primary border border-primary-subtle">Station A &bull; Alice</span>
+                        <h6 class="fw-bold mb-1">
+                            <i class="bi bi-broadcast text-primary"></i> Single-Photon Emitter
+                        </h6>
+                        <p class="text-muted small mb-2">State Preparation &amp; Polarizer</p>
+                        <div id="alice-bits-display" class="d-flex flex-wrap gap-1.5 justify-content-center align-content-center p-2 rounded bg-body-tertiary border" style="min-height: 85px; max-height: 110px; overflow-y: auto;">
+                            <span class="small text-muted font-monospace">Awaiting pulse...</span>
                         </div>
-
-                        <!-- Quantum Channel -->
-                        <div class="col-md-6">
-                            <div style="min-height: 120px; position: relative; border: 2px solid #0d6efd; border-radius: 10px; padding: 20px; background: rgba(13,110,253,0.05);">
-                                <div class="text-center mb-2 d-flex justify-content-between px-2">
-                                    <small class="text-muted fw-bold"><i class="bi bi-arrow-right-circle"></i> Optical / Free-Space Channel</small>
-                                    <small id="noise-indicator" class="text-muted">Noise: 0.0%</small>
-                                </div>
-                                <svg id="transmission-svg" width="100%" height="60" style="display: block; margin: 0 auto; background: var(--bs-body-bg, white); border-radius: 8px; border: 1px solid var(--bs-border-color, #e9ecef);">
-                                    <!-- Alice at left -->
-                                    <circle cx="20" cy="30" r="6" fill="#0d6efd" stroke="none"/>
-                                    <!-- Eve in the middle (if present) -->
-                                    <g id="eve-in-channel" style="display: none;">
-                                        <circle cx="245" cy="30" r="8" fill="#dc3545" stroke="none" opacity="0.7"/>
-                                        <circle cx="245" cy="30" r="14" fill="none" stroke="#dc3545" stroke-width="2" opacity="0.5"/>
-                                    </g>
-                                    <!-- Bob at right -->
-                                    <circle cx="470" cy="30" r="6" fill="#0d6efd" stroke="none"/>
-                                </svg>
-                            </div>
-                        </div>
-
-                        <!-- Bob -->
-                        <div class="col-md-3 text-center">
-                            <h5 class="fw-bold"><i class="bi bi-person-circle text-success"></i> Bob</h5>
-                            <p class="text-muted small mb-2">Projects & measures qubits</p>
-                            <div id="bob-bits-display" class="d-flex flex-wrap gap-2 justify-content-center" style="min-height: 100px;">
-                                <span class="badge bg-secondary">Awaiting reception...</span>
-                            </div>
-                            <small class="text-muted mt-2 d-block">Blue = 1 | Yellow = 0</small>
-                        </div>
-                    </div>
-
-                    <!-- Eve Intercept Display -->
-                    <div id="eve-section" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 2px dashed #dc3545;">
-                        <div class="text-center">
-                            <h5 class="text-danger fw-bold"><i class="bi bi-shield-exclamation"></i> EVE INTERCEPT-RESEND ATTACK</h5>
-                            <p class="text-danger small mb-2">Eve intercepted the optical channel and measured qubits with random bases</p>
-                            <div id="eve-bits-display" class="d-flex flex-wrap gap-2 justify-content-center mt-2">
-                                <span class="badge bg-secondary">Intercepting...</span>
-                            </div>
+                        <div class="d-flex justify-content-between small text-muted font-monospace mt-2 pt-1 border-top">
+                            <span><span class="text-success">&bull;</span> Bit 1</span>
+                            <span><span class="text-danger">&bull;</span> Bit 0</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Protocol Progression Steps -->
-                <div class="row">
-                    <!-- Step 1 -->
-                    <div class="col-md-6 mb-3">
-                        <div class="animation-step" id="step1">
-                            <h6 class="fw-bold"><i class="bi bi-1-circle-fill text-primary"></i> 1. Bit & Basis Generation</h6>
-                            <div class="progress mt-2" style="height: 10px;">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" id="progress1" style="width: 0%"></div>
-                            </div>
+                <!-- Quantum Channel (Fiber / Free Space) -->
+                <div class="col-lg-6">
+                    <div class="beam-tunnel">
+                        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                            <span class="small font-monospace text-primary fw-semibold">
+                                <i class="bi bi-arrow-right-circle"></i> Quantum Link (Single Photon Stream)
+                            </span>
+                            <span id="noise-indicator" class="small font-monospace text-muted">Noise: 0.0%</span>
                         </div>
-                    </div>
+                        
+                        <svg id="transmission-svg" width="100%" height="70" viewBox="0 0 500 70" preserveAspectRatio="none" style="display: block; background: var(--bg-surface); border-radius: 8px; border: 1px solid var(--border-subtle);">
+                            <!-- Optical Guide Beam -->
+                            <line x1="20" y1="35" x2="480" y2="35" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4,4" opacity="0.4"/>
 
-                    <!-- Step 2 -->
-                    <div class="col-md-6 mb-3">
-                        <div class="animation-step" id="step2" style="opacity: 0.5;">
-                            <h6 class="fw-bold"><i class="bi bi-2-circle-fill text-primary"></i> 2. Quantum Transmission</h6>
-                            <p class="mb-0 small text-muted">Alice transmits polarized photons through the quantum channel...</p>
-                        </div>
-                    </div>
-
-                    <!-- Step 3 -->
-                    <div class="col-md-6 mb-3">
-                        <div class="animation-step" id="step3" style="opacity: 0.5;">
-                            <h6 class="fw-bold"><i class="bi bi-3-circle-fill text-primary"></i> 3. Bob's Projective Measurement</h6>
-                            <p class="mb-0 small text-muted">Bob projects photons onto independently chosen bases...</p>
-                        </div>
-                    </div>
-
-                    <!-- Step 4 -->
-                    <div class="col-md-6 mb-3">
-                        <div class="animation-step" id="step4" style="opacity: 0.5;">
-                            <h6 class="fw-bold"><i class="bi bi-4-circle-fill text-primary"></i> 4. Sifting (Basis Reconciliation)</h6>
-                            <p id="matching-text" class="mb-0 small text-muted">Comparing bases over classical channel...</p>
-                        </div>
-                    </div>
-
-                    <!-- Step 5 -->
-                    <div class="col-md-6 mb-3">
-                        <div class="animation-step" id="step5" style="opacity: 0.5;">
-                            <h6 class="fw-bold"><i class="bi bi-5-circle-fill text-primary"></i> 5. Distilled Secret Key</h6>
-                            <div id="final-key" class="alert alert-success mt-2" style="display: none; margin: 0; padding: 10px; font-size: 0.85rem;">
-                                <code id="final-key-text" style="word-break: break-all;"></code>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 6 -->
-                    <div class="col-md-6 mb-3">
-                        <div class="animation-step" id="step6" style="opacity: 0.5;">
-                            <h6 class="fw-bold"><i class="bi bi-6-circle-fill text-primary"></i> 6. Security Metrics & Key Rate</h6>
-                            <div id="qber-result" class="alert alert-info mt-2" style="display: none; margin: 0; padding: 10px; font-size: 0.85rem;"></div>
-                        </div>
+                            <!-- Alice Laser Source -->
+                            <circle cx="20" cy="35" r="6" fill="#3b82f6"/>
+                            
+                            <!-- Eve Interceptor in Channel (Hidden unless active) -->
+                            <g id="eve-in-channel" style="display: none;">
+                                <circle cx="250" cy="35" r="9" fill="#dc2626" opacity="0.8"/>
+                                <text x="250" y="58" text-anchor="middle" fill="#dc2626" font-size="10" font-family="monospace" font-weight="bold">EVE</text>
+                            </g>
+                            
+                            <!-- Bob Detector Target -->
+                            <circle cx="480" cy="35" r="6" fill="#059669"/>
+                        </svg>
                     </div>
                 </div>
 
-                <!-- Intrusion & Decoherence Alert -->
-                <div id="spy-alert" class="alert alert-danger shadow-sm mt-3" role="alert" style="display: none; font-size: 1.05rem;">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-shield-x fs-1 me-3 text-danger"></i>
-                        <div>
-                            <h5 class="alert-heading fw-bold mb-1">INTRUSION OR CHANNEL DECOHERENCE DETECTED</h5>
-                            <p id="spy-details" class="mb-0 small"></p>
+                <!-- Bob's Detector -->
+                <div class="col-lg-3 text-center">
+                    <div class="station-card">
+                        <span class="station-badge-inline bg-success-subtle text-success border border-success-subtle">Station B &bull; Bob</span>
+                        <h6 class="fw-bold mb-1">
+                            <i class="bi bi-bullseye text-success"></i> APD Detector
+                        </h6>
+                        <p class="text-muted small mb-2">Projective Measurement</p>
+                        <div id="bob-bits-display" class="d-flex flex-wrap gap-1.5 justify-content-center align-content-center p-2 rounded bg-body-tertiary border" style="min-height: 85px; max-height: 110px; overflow-y: auto;">
+                            <span class="small text-muted font-monospace">Awaiting photons...</span>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted font-monospace mt-2 pt-1 border-top">
+                            <span><span class="text-primary">&bull;</span> Blue: 1</span>
+                            <span><span class="text-warning">&bull;</span> Yellow: 0</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Status & Progress -->
-                <div class="text-center mt-4">
-                    <div class="spinner-border text-primary" role="status" id="main-spinner">
-                        <span class="visually-hidden">Executing quantum circuit...</span>
+            <!-- Eve Threat Intercept Display (Visible when Eve active) -->
+            <div id="eve-section" class="mt-4 pt-3 border-top border-danger" style="display: none;">
+                <div class="text-center">
+                    <div class="d-inline-flex align-items-center gap-2 text-danger fw-bold font-monospace mb-1 small">
+                        <i class="bi bi-shield-slash-fill"></i> EVE INTERCEPT-RESEND ATTACK REGISTER
                     </div>
-                    <p class="text-muted mt-2 fw-semibold" id="status-text">Initializing quantum simulation...</p>
-                </div>
-                
-                <!-- Action Buttons -->
-                <div class="text-center mt-3" id="dashboard-button" style="display: none;">
-                    <div class="d-flex justify-content-center gap-2 flex-wrap">
-                        <a href="{{ url_for('simulator') }}" class="btn btn-outline-primary btn-lg">
-                            <i class="bi bi-arrow-repeat"></i> Run Another Experiment
-                        </a>
-                        {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
-                                <i class="bi bi-speedometer2"></i> Go to Dashboard
-                            </a>
-                        {% else %}
-                            <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">
-                                <i class="bi bi-person-plus-fill"></i> Sign Up to Persist History
-                            </a>
-                        {% endif %}
+                    <p class="text-muted small mb-2">Eavesdropper measured single photons in random bases, inducing wave-function collapse</p>
+                    <div id="eve-bits-display" class="d-flex flex-wrap gap-1.5 justify-content-center p-2 rounded bg-body-tertiary border mx-auto" style="max-width: 600px; min-height: 44px;">
+                        <span class="small text-muted font-monospace">Intercepting quantum state...</span>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Protocol Steps Progression -->
+        <div class="row g-3 mb-4">
+            <!-- Step 1 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="protocol-step-hud" id="step1">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="fw-bold mb-0 small"><i class="bi bi-1-circle-fill text-primary"></i> State Preparation</h6>
+                        <span class="badge bg-secondary-subtle text-muted font-monospace" id="step1-badge">Pending</span>
+                    </div>
+                    <p class="small text-muted mb-2">Alice pre-encodes bits into random bases $\{+, \times\}$.</p>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-primary" id="progress1" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="protocol-step-hud" id="step2" style="opacity: 0.5;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="fw-bold mb-0 small"><i class="bi bi-2-circle-fill text-primary"></i> Optical Transit</h6>
+                        <span class="badge bg-secondary-subtle text-muted font-monospace" id="step2-badge">Pending</span>
+                    </div>
+                    <p class="small text-muted mb-2">Photons traverse fiber link under depolarizing noise.</p>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-info" id="progress2" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="protocol-step-hud" id="step3" style="opacity: 0.5;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="fw-bold mb-0 small"><i class="bi bi-3-circle-fill text-primary"></i> Bob's Projection</h6>
+                        <span class="badge bg-secondary-subtle text-muted font-monospace" id="step3-badge">Pending</span>
+                    </div>
+                    <p class="small text-muted mb-2">Projective measurement onto independent bases.</p>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-warning" id="progress3" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="protocol-step-hud" id="step4" style="opacity: 0.5;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="fw-bold mb-0 small"><i class="bi bi-4-circle-fill text-primary"></i> Basis Sifting</h6>
+                        <span class="badge bg-secondary-subtle text-muted font-monospace" id="step4-badge">Pending</span>
+                    </div>
+                    <p id="matching-text" class="small text-muted mb-2">Reconciling bases over classical channel...</p>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-primary" id="progress4" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="protocol-step-hud" id="step5" style="opacity: 0.5;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="fw-bold mb-0 small"><i class="bi bi-5-circle-fill text-primary"></i> Distilled Secret Key</h6>
+                        <span class="badge bg-secondary-subtle text-muted font-monospace" id="step5-badge">Pending</span>
+                    </div>
+                    <div id="final-key" class="p-2 rounded bg-body-tertiary font-monospace small" style="display: none; word-break: break-all;">
+                        <code id="final-key-text" class="text-success"></code>
+                    </div>
+                    <small id="final-key-placeholder" class="text-muted d-block">Awaiting distillation...</small>
+                </div>
+            </div>
+
+            <!-- Step 6 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="protocol-step-hud" id="step6" style="opacity: 0.5;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="fw-bold mb-0 small"><i class="bi bi-6-circle-fill text-primary"></i> Security Telemetry</h6>
+                        <span class="badge bg-secondary-subtle text-muted font-monospace" id="step6-badge">Pending</span>
+                    </div>
+                    <div id="qber-result" class="p-2 rounded border bg-body-tertiary font-monospace small" style="display: none;">
+                        <div class="d-flex justify-content-between">
+                            <span>QBER: <strong id="qber-val-text" class="text-primary">0.0%</strong></span>
+                            <span>$R$: <strong id="skr-val-text" class="text-success">1.0</strong></span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted" style="font-size: 0.76rem;">
+                            <span>$h(p)$: <span id="entropy-val-text">0.000</span></span>
+                            <span id="security-status-text">Evaluating...</span>
+                        </div>
+                    </div>
+                    <small id="qber-placeholder" class="text-muted d-block">Awaiting parameter estimation...</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Threat / Decoherence Alert Banner -->
+        <div id="spy-alert" class="alert alert-danger shadow-sm border-0 mb-4" role="alert" style="display: none;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-shield-x fs-2 me-3 text-danger"></i>
+                <div>
+                    <h6 class="alert-heading fw-bold mb-1">INTRUSION OR CHANNEL DECOHERENCE DETECTED</h6>
+                    <p id="spy-details" class="mb-0 small"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status & Spinner -->
+        <div class="text-center my-3" id="spinner-container">
+            <div class="spinner-border text-primary spinner-border-sm" role="status" id="main-spinner">
+                <span class="visually-hidden">Executing quantum circuit...</span>
+            </div>
+            <p class="text-muted small mt-2 fw-medium" id="status-text">Initializing quantum simulation...</p>
+        </div>
+        
+        <!-- Post-Execution Action Bar -->
+        <div class="card p-4 text-center" id="dashboard-button" style="display: none;">
+            <div class="d-flex justify-content-center gap-3 flex-wrap align-items-center">
+                <button type="button" class="btn btn-outline-secondary" onclick="replaySimulation()">
+                    <i class="bi bi-arrow-repeat"></i> Replay Animation
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="copy-key-btn" onclick="copyDistilledKey()">
+                    <i class="bi bi-clipboard-check"></i> Copy Key
+                </button>
+                <button type="button" class="btn btn-outline-secondary" onclick="downloadJSONReport()">
+                    <i class="bi bi-download"></i> Export JSON Report
+                </button>
+                <a href="{{ url_for('simulator') }}" class="btn btn-primary fw-semibold">
+                    <i class="bi bi-sliders"></i> New Experiment
+                </a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-success fw-semibold">
+                        <i class="bi bi-person-plus-fill"></i> Sign Up to Persist
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
 <script>
-let animationStarted = false;
+let animationSpeed = 2;
+let skipRequested = false;
+let simulationData = null;
+
+function setAnimationSpeed(speed, elem) {
+    animationSpeed = speed;
+    document.querySelectorAll('#speed-1x, #speed-2x, #speed-4x').forEach(b => b.classList.remove('active'));
+    if (elem) elem.classList.add('active');
+}
+
+function skipAnimation() {
+    skipRequested = true;
+    animationSpeed = 100;
+}
+
+function replaySimulation() {
+    if (!simulationData) return;
+    skipRequested = false;
+    animationSpeed = 2;
+    document.getElementById('dashboard-button').style.display = 'none';
+    document.getElementById('main-spinner').style.display = 'inline-block';
+    renderSimulation(simulationData);
+}
 
 document.addEventListener('DOMContentLoaded', function() {
-    runBB84Animation();
+    runBB84Simulation();
 });
 
-async function runBB84Animation() {
-    if (animationStarted) {
-        window.location.href = '{{ url_for("simulator") }}';
-        return;
-    }
-    
-    animationStarted = true;
+async function runBB84Simulation() {
     const statusText = document.getElementById('status-text');
     const mainSpinner = document.getElementById('main-spinner');
     
     try {
         const params = new URLSearchParams(window.location.search);
-        const keyLength = params.get('key_length') || 256;
+        const keyLength = parseInt(params.get('key_length') || 20);
         const hasEveParam = params.get('has_eve') || '0';
         const hasEve = hasEveParam === '1' || hasEveParam === 'true' || hasEveParam === 'True';
         const noiseRate = parseFloat(params.get('noise_rate') || 0.0);
         
+        document.getElementById('qubit-badge').textContent = `N = ${keyLength} Qubits`;
         document.getElementById('noise-indicator').textContent = `Noise: ${(noiseRate * 100).toFixed(1)}%`;
         
         if (hasEve) {
-            const eveInChannel = document.getElementById('eve-in-channel');
-            eveInChannel.style.display = 'block';
+            document.getElementById('eve-in-channel').style.display = 'block';
         }
         
-        statusText.textContent = 'Executing Qiskit Aer simulation...';
+        statusText.textContent = 'Executing Qiskit Aer simulation engine...';
         
         const response = await fetch('{{ url_for("run_simulation") }}', {
             method: 'POST',
@@ -210,7 +321,7 @@ async function runBB84Animation() {
             },
             credentials: 'include',
             body: JSON.stringify({
-                key_length: parseInt(keyLength),
+                key_length: keyLength,
                 has_eve: hasEve,
                 noise_rate: noiseRate
             })
@@ -218,42 +329,54 @@ async function runBB84Animation() {
         
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(`Error ${response.status}: ${errorData.message || response.statusText}`);
+            throw new Error(`Server returned ${response.status}: ${errorData.message || response.statusText}`);
         }
         
         const data = await response.json();
         
         if (!data.success) {
-            throw new Error(data.message || 'Simulation execution failed');
+            throw new Error(data.message || 'Simulation run failed');
         }
         
-        await animateStep1(data);
-        await animateStep2(hasEve, data);
-        await animateStep3(data);
-        await animateStep4(data);
-        await animateStep5(data);
-        await animateStep6(data, hasEve);
-        
-        if (data.session?.result === 'compromised') {
-            showSpyAlert(data, hasEve);
-        }
-        
-        mainSpinner.style.display = 'none';
-        statusText.textContent = 'Simulation completed successfully.';
-        document.getElementById('channel-badge').className = data.session?.result === 'secure' 
-            ? 'badge bg-success text-white border px-3 py-2' 
-            : 'badge bg-danger text-white border px-3 py-2';
-        document.getElementById('channel-badge').textContent = data.session?.result === 'secure' 
-            ? 'Key Securely Exchanged' 
-            : 'Channel Compromised / Aborted';
-            
-        document.getElementById('dashboard-button').style.display = 'block';
+        simulationData = data;
+        await renderSimulation(data);
         
     } catch (error) {
         console.error('Simulation error:', error);
         mainSpinner.style.display = 'none';
-        statusText.innerHTML = `<span class="text-danger"><i class="bi bi-exclamation-circle"></i> Error: ${error.message}</span>`;
+        statusText.innerHTML = `<span class="text-danger font-monospace"><i class="bi bi-exclamation-octagon"></i> Simulation failed: ${error.message}</span>`;
     }
+}
+
+async function renderSimulation(data) {
+    const hasEve = data.simulation_details?.has_eve || false;
+    const mainSpinner = document.getElementById('main-spinner');
+    const statusText = document.getElementById('status-text');
+
+    await animateStep1(data);
+    await animateStep2(hasEve, data);
+    await animateStep3(data);
+    await animateStep4(data);
+    await animateStep5(data);
+    await animateStep6(data, hasEve);
+    
+    if (data.session?.result === 'compromised') {
+        showSpyAlert(data, hasEve);
+    }
+    
+    mainSpinner.style.display = 'none';
+    statusText.textContent = 'Simulation completed successfully.';
+    
+    const channelBadge = document.getElementById('channel-badge');
+    const isSecure = data.session?.result === 'secure';
+    channelBadge.className = isSecure 
+        ? 'badge bg-success text-white border px-3 py-2 font-monospace' 
+        : 'badge bg-danger text-white border px-3 py-2 font-monospace';
+    channelBadge.textContent = isSecure 
+        ? '✓ Key Securely Distilled' 
+        : '⚠ Channel Compromised / Aborted';
+        
+    document.getElementById('dashboard-button').style.display = 'block';
 }
 
 function showSpyAlert(data, hasEve) {
@@ -265,60 +388,77 @@ function showSpyAlert(data, hasEve) {
     const noise = ((details.noise_rate || 0) * 100).toFixed(1);
     
     const reason = hasEve 
-        ? 'Eve intercepted and measured the quantum states in transit.' 
-        : `Channel depolarizing noise (${noise}%) exceeded acceptable thresholds.`;
+        ? 'Eve actively intercepted and collapsed photon wave-functions in transit.' 
+        : `Optical fiber depolarizing noise (${noise}%) exceeded the theoretical Shor-Preskill limit.`;
         
     spyDetails.innerHTML = `
-        <strong>Measured QBER: ${qber}%</strong> (BB84 theoretical threshold: 11.00%) &bull; 
-        <strong>Secret Key Rate: ${skr}</strong><br>
-        ${reason} Information-theoretic security cannot be guaranteed. Key exchange aborted.
+        <strong>Measured QBER: ${qber}%</strong> (BB84 Cutoff: 11.00%) &bull; 
+        <strong>Secret Key Rate ($R$): ${skr}</strong><br>
+        ${reason} Information-theoretic security cannot be guaranteed. Key distillation aborted.
     `;
     
     spyAlert.style.display = 'block';
-    spyAlert.classList.add('shake-animation');
 }
 
 async function animateStep1(data) {
     const step = document.getElementById('step1');
+    const badge = document.getElementById('step1-badge');
     const progressBar = document.getElementById('progress1');
     const aliceBitsDisplay = document.getElementById('alice-bits-display');
     
-    step.style.opacity = '1';
+    step.className = 'protocol-step-hud active';
+    badge.className = 'badge bg-primary text-white font-monospace';
+    badge.textContent = 'Preparing...';
     aliceBitsDisplay.innerHTML = '';
     
-    const displayCount = Math.min(16, (data.alice_bits || []).length);
+    const displayCount = Math.min(24, (data.alice_bits || []).length);
     for (let i = 0; i < displayCount; i++) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+        if (!skipRequested) await new Promise(resolve => setTimeout(resolve, 50 / animationSpeed));
         
         const bit = data.alice_bits[i];
-        const title = 'Bit ' + bit + ' in basis ' + (data.alice_bases[i] === 1 ? '×' : '+');
-        const bgColor = bit === 1 ? '#198754' : '#dc3545';
-        aliceBitsDisplay.innerHTML += `<span class="bit-square" title="${title}" style="display: inline-block; width: 32px; height: 32px; background: ${bgColor}; border-radius: 6px; line-height: 32px; text-align: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${bit}</span>`;
+        const basis = data.alice_bases[i] === 1 ? '×' : '+';
+        const ket = basis === '+' ? (bit === 0 ? '|0⟩' : '|1⟩') : (bit === 0 ? '|+⟩' : '|-⟩');
+        const title = `Qubit ${i}: Bit ${bit} | Basis ${basis} | State ${ket}`;
+        const bitClass = bit === 1 ? 'bit-1' : 'bit-0';
         
+        aliceBitsDisplay.innerHTML += `<span class="bit-square ${bitClass}" title="${title}">${bit}</span>`;
         progressBar.style.width = ((i + 1) / displayCount * 100) + '%';
     }
     
-    await new Promise(resolve => setTimeout(resolve, 400));
+    badge.className = 'badge bg-success-subtle text-success border border-success-subtle font-monospace';
+    badge.textContent = 'Complete';
+    step.className = 'protocol-step-hud completed';
+    if (!skipRequested) await new Promise(resolve => setTimeout(resolve, 150 / animationSpeed));
 }
 
 async function animateStep2(hasEve, data) {
     const step = document.getElementById('step2');
+    const badge = document.getElementById('step2-badge');
+    const progressBar = document.getElementById('progress2');
     const eveSection = document.getElementById('eve-section');
     const eveBitsDisplay = document.getElementById('eve-bits-display');
     const svg = document.getElementById('transmission-svg');
     
     step.style.opacity = '1';
+    step.className = 'protocol-step-hud active';
+    badge.className = 'badge bg-info-subtle text-info border font-monospace';
+    badge.textContent = 'Transmitting...';
+    
     const numPhotons = Math.min(16, (data.alice_bits || []).length);
-    const svg_width = svg.clientWidth || 490;
+    
+    if (hasEve) {
+        eveSection.style.display = 'block';
+        eveBitsDisplay.innerHTML = '';
+    } else {
+        eveSection.style.display = 'none';
+    }
     
     for (let i = 0; i < numPhotons; i++) {
         const photon = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         photon.setAttribute('r', '5');
-        photon.setAttribute('fill', '#198754');
-        photon.setAttribute('cy', '30');
+        photon.setAttribute('fill', '#2563eb');
+        photon.setAttribute('cy', '35');
         photon.setAttribute('cx', '20');
-        photon.setAttribute('filter', 'drop-shadow(0 0 3px rgba(25, 135, 84, 0.8))');
-        photon.setAttribute('data-intercepted', 'false');
         
         svg.appendChild(photon);
         
@@ -327,58 +467,48 @@ async function animateStep2(hasEve, data) {
             photon.setAttribute('data-intercepted', 'true');
         }
         
-        await animatePhoton(photon, svg_width, 700, intercepted);
-        await new Promise(resolve => setTimeout(resolve, 80));
-    }
-    
-    if (hasEve) {
-        eveSection.style.display = 'block';
-        const displayCount = Math.min(8, (data.eve_bits || []).length);
-        eveBitsDisplay.innerHTML = '';
-        for (let i = 0; i < displayCount; i++) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            const bit = data.eve_bits[i];
-            const title = 'Eve measured ' + bit + ' in basis ' + (data.eve_bases[i] === 1 ? '×' : '+');
-            const bgColor = '#8b0000';
-            eveBitsDisplay.innerHTML += `<span class="bit-square" title="${title}" style="display: inline-block; width: 32px; height: 32px; background: ${bgColor}; border-radius: 6px; line-height: 32px; text-align: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${bit}</span>`;
+        if (!skipRequested) {
+            await animatePhoton(photon, 500, 500 / animationSpeed, intercepted);
+            await new Promise(resolve => setTimeout(resolve, 30 / animationSpeed));
+        } else {
+            photon.remove();
         }
-    } else {
-        eveSection.style.display = 'none';
+        
+        progressBar.style.width = ((i + 1) / numPhotons * 100) + '%';
+
+        if (hasEve && i < (data.eve_bits || []).length && i < 16) {
+            const ebit = data.eve_bits[i];
+            const ebasis = data.eve_bases[i] === 1 ? '×' : '+';
+            const title = `Eve Qubit ${i}: Measured ${ebit} in basis ${ebasis}`;
+            eveBitsDisplay.innerHTML += `<span class="bit-square bit-eve" title="${title}">${ebit}</span>`;
+        }
     }
     
-    await new Promise(resolve => setTimeout(resolve, 400));
+    badge.className = 'badge bg-success-subtle text-success border border-success-subtle font-monospace';
+    badge.textContent = 'Complete';
+    step.className = 'protocol-step-hud completed';
+    if (!skipRequested) await new Promise(resolve => setTimeout(resolve, 150 / animationSpeed));
 }
 
 function animatePhoton(photon, width, duration, intercepted) {
     return new Promise(resolve => {
         const startTime = Date.now();
-        const eveX = width * 0.5;
         
         function frame() {
             const elapsed = Date.now() - startTime;
             const progress = Math.min(elapsed / duration, 1);
             
-            let x, y, size;
+            let x = 20 + (width - 40) * progress;
+            let y = 35;
             
-            if (intercepted && progress >= 0.4) {
-                photon.setAttribute('fill', '#dc3545');
-                photon.setAttribute('filter', 'drop-shadow(0 0 8px rgba(220, 53, 69, 0.9))');
-                
-                const interceptProgress = (progress - 0.4) / 0.6;
-                x = 20 + (width - 40) * 0.4 + (eveX - (20 + (width - 40) * 0.4)) * interceptProgress;
-                y = 30 + Math.sin(interceptProgress * Math.PI * 0.5) * 15 + interceptProgress * 50;
-                size = 5 + interceptProgress * 2;
-            } else {
-                x = 20 + (width - 40) * progress;
-                y = 30;
-                size = 5;
+            if (intercepted && progress >= 0.45) {
+                photon.setAttribute('fill', '#dc2626');
             }
             
             photon.setAttribute('cx', x);
             photon.setAttribute('cy', y);
-            photon.setAttribute('r', size);
             
-            if (progress < 1) {
+            if (progress < 1 && !skipRequested) {
                 requestAnimationFrame(frame);
             } else {
                 photon.remove();
@@ -392,62 +522,98 @@ function animatePhoton(photon, width, duration, intercepted) {
 
 async function animateStep3(data) {
     const step = document.getElementById('step3');
+    const badge = document.getElementById('step3-badge');
+    const progressBar = document.getElementById('progress3');
     const bobBitsDisplay = document.getElementById('bob-bits-display');
     
     step.style.opacity = '1';
+    step.className = 'protocol-step-hud active';
+    badge.className = 'badge bg-warning-subtle text-warning border font-monospace';
+    badge.textContent = 'Measuring...';
     bobBitsDisplay.innerHTML = '';
     
-    const displayCount = Math.min(16, (data.bob_bits || []).length);
+    const displayCount = Math.min(24, (data.bob_bits || []).length);
     for (let i = 0; i < displayCount; i++) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+        if (!skipRequested) await new Promise(resolve => setTimeout(resolve, 40 / animationSpeed));
         const bit = data.bob_bits[i];
-        const title = 'Bob measured ' + bit + ' in basis ' + (data.bob_bases[i] === 1 ? '×' : '+');
-        const bgColor = bit === 1 ? '#0d6efd' : '#ffc107';
-        bobBitsDisplay.innerHTML += `<span class="bit-square" title="${title}" style="display: inline-block; width: 32px; height: 32px; background: ${bgColor}; border-radius: 6px; line-height: 32px; text-align: center; color: ${bit === 1 ? 'white' : 'black'}; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${bit}</span>`;
+        const basis = data.bob_bases[i] === 1 ? '×' : '+';
+        const title = `Bob measured ${bit} in basis ${basis}`;
+        const bitClass = bit === 1 ? 'bit-bob-1' : 'bit-bob-0';
+        
+        bobBitsDisplay.innerHTML += `<span class="bit-square ${bitClass}" title="${title}">${bit}</span>`;
+        progressBar.style.width = ((i + 1) / displayCount * 100) + '%';
     }
     
-    await new Promise(resolve => setTimeout(resolve, 400));
+    badge.className = 'badge bg-success-subtle text-success border border-success-subtle font-monospace';
+    badge.textContent = 'Complete';
+    step.className = 'protocol-step-hud completed';
+    if (!skipRequested) await new Promise(resolve => setTimeout(resolve, 150 / animationSpeed));
 }
 
 async function animateStep4(data) {
     const step = document.getElementById('step4');
+    const badge = document.getElementById('step4-badge');
+    const progressBar = document.getElementById('progress4');
     const matchingText = document.getElementById('matching-text');
     
     step.style.opacity = '1';
+    step.className = 'protocol-step-hud active';
+    badge.className = 'badge bg-primary-subtle text-primary border font-monospace';
+    badge.textContent = 'Sifting...';
     
     const details = data.simulation_details || {};
     const matches = details.key_length_after_sifting || 0;
+    const total = (data.alice_bits || []).length;
+    const siftPct = total > 0 ? ((matches / total) * 100).toFixed(1) : '50.0';
     
-    matchingText.innerHTML = `<strong>${matches} bits matched</strong> across compatible bases`;
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    progressBar.style.width = '100%';
+    matchingText.innerHTML = `<strong>${matches} bits matched</strong> across compatible bases (${siftPct}% efficiency)`;
+    
+    badge.className = 'badge bg-success-subtle text-success border border-success-subtle font-monospace';
+    badge.textContent = 'Complete';
+    step.className = 'protocol-step-hud completed';
+    if (!skipRequested) await new Promise(resolve => setTimeout(resolve, 200 / animationSpeed));
 }
 
 async function animateStep5(data) {
     const step = document.getElementById('step5');
+    const badge = document.getElementById('step5-badge');
     const finalKeyDiv = document.getElementById('final-key');
     const finalKeyText = document.getElementById('final-key-text');
+    const placeholder = document.getElementById('final-key-placeholder');
     
     step.style.opacity = '1';
+    step.className = 'protocol-step-hud active';
+    badge.className = 'badge bg-primary-subtle text-primary border font-monospace';
+    badge.textContent = 'Distilling...';
+    placeholder.style.display = 'none';
     
     const finalKey = data.session?.final_key;
     
     if (finalKey && finalKey !== 'N/A' && finalKey !== null && finalKey !== '') {
-        finalKeyText.textContent = finalKey.substring(0, 64) + (finalKey.length > 64 ? '...' : '');
+        finalKeyText.textContent = finalKey.length > 40 ? finalKey.substring(0, 40) + '...' : finalKey;
         finalKeyDiv.style.display = 'block';
+        badge.className = 'badge bg-success-subtle text-success border border-success-subtle font-monospace';
+        badge.textContent = `${finalKey.length} Bits`;
     } else {
-        finalKeyDiv.innerHTML = '<code style="word-break: break-all;"><em>No key distilled (QBER exceeded 11% threshold)</em></code>';
-        finalKeyDiv.className = 'alert alert-secondary mt-2';
+        finalKeyDiv.innerHTML = '<span class="text-danger small"><em>No key distilled (QBER &ge; 11% cutoff)</em></span>';
         finalKeyDiv.style.display = 'block';
+        badge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle font-monospace';
+        badge.textContent = 'Aborted';
     }
     
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    step.className = 'protocol-step-hud completed';
+    if (!skipRequested) await new Promise(resolve => setTimeout(resolve, 200 / animationSpeed));
 }
 
 async function animateStep6(data, hasEve) {
     const step = document.getElementById('step6');
+    const badge = document.getElementById('step6-badge');
     const qberResult = document.getElementById('qber-result');
+    const placeholder = document.getElementById('qber-placeholder');
     
     step.style.opacity = '1';
+    placeholder.style.display = 'none';
     
     const details = data.simulation_details || {};
     const errorRate = details.error_rate || 0;
@@ -456,49 +622,44 @@ async function animateStep6(data, hasEve) {
     const entropy = (details.shannon_entropy !== undefined ? details.shannon_entropy : 0.0).toFixed(3);
     const isSecure = data.session?.result === 'secure';
     
-    qberResult.className = isSecure ? 'alert alert-success' : 'alert alert-danger';
-    qberResult.innerHTML = `
-        <div class="d-flex justify-content-between align-items-center">
-            <span><strong>QBER:</strong> ${qber}%</span>
-            <span><strong>Secret Key Rate (R):</strong> ${skr}</span>
-        </div>
-        <div class="d-flex justify-content-between align-items-center small mt-1">
-            <span>Shannon Entropy h(p): ${entropy}</span>
-            <span>${isSecure ? '✓ Secure Exchange' : '⚠ High Error / Intrusion'}</span>
-        </div>
-    `;
-    qberResult.style.display = 'block';
+    document.getElementById('qber-val-text').textContent = `${qber}%`;
+    document.getElementById('skr-val-text').textContent = skr;
+    document.getElementById('entropy-val-text').textContent = entropy;
     
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const statusTextElem = document.getElementById('security-status-text');
+    statusTextElem.textContent = isSecure ? '✓ Below 11% Limit' : '⚠ Exceeds 11% Limit';
+    statusTextElem.className = isSecure ? 'text-success fw-bold' : 'text-danger fw-bold';
+    
+    qberResult.style.display = 'block';
+    badge.className = isSecure ? 'badge bg-success-subtle text-success border border-success-subtle font-monospace' : 'badge bg-danger-subtle text-danger border border-danger-subtle font-monospace';
+    badge.textContent = isSecure ? 'Secure' : 'Compromised';
+    step.className = 'protocol-step-hud completed';
+}
+
+function copyDistilledKey() {
+    const finalKey = simulationData?.session?.final_key;
+    const btn = document.getElementById('copy-key-btn');
+    if (!finalKey || finalKey === 'N/A') {
+        alert('No secret key was distilled in this session.');
+        return;
+    }
+    navigator.clipboard.writeText(finalKey).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check-lg text-success"></i> Copied!';
+        setTimeout(() => btn.innerHTML = orig, 2000);
+    });
+}
+
+function downloadJSONReport() {
+    if (!simulationData) return;
+    const jsonStr = JSON.stringify(simulationData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `qsec-simulation-session-${simulationData.session?.id || 'run'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
 </script>
-
-<style>
-.animation-step {
-    padding: 15px;
-    border-left: 4px solid #0d6efd;
-    background-color: var(--bs-tertiary-bg, #f8f9fa);
-    border-radius: 6px;
-    transition: all 0.3s ease;
-}
-
-.bit-square {
-    transition: all 0.2s ease;
-}
-
-.bit-square:hover {
-    transform: scale(1.15);
-    box-shadow: 0 0 10px rgba(0,0,0,0.3);
-}
-
-.shake-animation {
-    animation: shake 0.5s;
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-    20%, 40%, 60%, 80% { transform: translateX(10px); }
-}
-</style>
 {% endblock %}

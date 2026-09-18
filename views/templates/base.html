@@ -1,25 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Q-Sec{% endblock %} - BB84 Quantum Key Distribution Simulator</title>
+    <title>{% block title %}Q-Sec{% endblock %} - BB84 Quantum Key Distribution Platform</title>
     
-    <!-- Google Fonts -->
+    <!-- Clean, High-Legibility Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <!-- KaTeX for Quantum Math Formulas -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
     
-    <!-- Custom CSS -->
+    <!-- Chart.js for Data Visualizations & Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    
+    <!-- Custom Design System CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     {% block extra_css %}{% endblock %}
@@ -29,28 +33,39 @@
             try {
                 const savedTheme = localStorage.getItem('qsec-theme');
                 const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const theme = savedTheme ? savedTheme : (systemPrefersDark ? 'dark' : 'light');
+                const theme = savedTheme ? savedTheme : (systemPrefersDark ? 'dark' : 'dark');
                 document.documentElement.setAttribute('data-bs-theme', theme);
             } catch (e) {}
         })();
     </script>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg qsec-navbar shadow-sm sticky-top">
+    <!-- Clean Navbar -->
+    <nav class="navbar navbar-expand-lg qsec-navbar sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ url_for('home') }}">
-                <span class="brand-icon"><i class="bi bi-shield-lock-fill text-warning"></i></span>
-                <span class="brand-text">Q-Sec</span>
+            <a class="navbar-brand" href="{{ url_for('home') }}">
+                <div class="brand-icon-wrapper">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <span>Q-Sec</span>
             </a>
-            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+
+            <!-- Engine status badge in nav -->
+            <div class="d-none d-md-flex align-items-center ms-3">
+                <span class="engine-pulse-chip">
+                    <span class="pulse-dot"></span> Qiskit 2.2 Aer
+                </span>
+            </div>
+
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center gap-1">
                     <li class="nav-item">
                         <a class="nav-link px-3 {% if request.endpoint == 'home' %}active{% endif %}" href="{{ url_for('home') }}">
-                            <i class="bi bi-house-door"></i> Home
+                            <i class="bi bi-house"></i> Home
                         </a>
                     </li>
                     <li class="nav-item">
@@ -65,33 +80,43 @@
                     </li>
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                            <a class="nav-link px-3 {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('history') }}">History</a>
+                            <a class="nav-link px-3 {% if request.endpoint == 'history' %}active{% endif %}" href="{{ url_for('history') }}">
+                                <i class="bi bi-clock-history"></i> History
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <span class="nav-link text-muted">
+                        <li class="nav-item ms-lg-2">
+                            <span class="nav-link text-muted small py-1">
                                 <i class="bi bi-person-circle"></i> {{ current_user.username }}
                             </span>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-sm btn-outline-secondary ms-lg-2 px-3" href="{{ url_for('logout') }}">Log Out</a>
+                            <a class="btn btn-sm btn-outline-secondary ms-lg-2 px-3" href="{{ url_for('logout') }}">
+                                <i class="bi bi-box-arrow-right"></i> Log Out
+                            </a>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link px-3" href="{{ url_for('login') }}">Sign In</a>
+                            <a class="nav-link px-3 {% if request.endpoint == 'login' %}active{% endif %}" href="{{ url_for('login') }}">
+                                <i class="bi bi-box-arrow-in-right"></i> Sign In
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-sm btn-primary ms-lg-2 px-3 fw-semibold shadow-sm" href="{{ url_for('register') }}">Sign Up</a>
+                            <a class="btn btn-sm btn-primary ms-lg-2 px-3 fw-semibold shadow-sm" href="{{ url_for('register') }}">
+                                Sign Up
+                            </a>
                         </li>
                     {% endif %}
                     
-                    <!-- Dark / Light Mode Toggle -->
+                    <!-- Theme Toggle -->
                     <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-                        <button id="theme-toggle" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 d-flex align-items-center gap-1.5" type="button" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
-                            <i id="theme-icon" class="bi bi-moon-stars-fill"></i>
-                            <span id="theme-text" class="small">Dark</span>
+                        <button id="theme-toggle" class="btn-theme-toggle d-flex align-items-center gap-1.5" type="button" aria-label="Toggle light or dark theme" title="Toggle Light/Dark Theme">
+                            <i id="theme-icon" class="bi bi-sun-fill text-warning"></i>
+                            <span id="theme-text">Light</span>
                         </button>
                     </li>
                 </ul>
@@ -104,9 +129,9 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}
             {% endif %}
@@ -119,27 +144,38 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-light text-center text-muted py-4 mt-5 border-top">
+    <footer class="py-4 mt-5">
         <div class="container">
-            <p class="mb-1">
-                <i class="bi bi-atom text-primary"></i> <strong>Q-Sec</strong> - Interactive BB84 Quantum Key Distribution Simulator
-            </p>
-            <p class="small text-muted mb-2">
-                Presented at <em>CoNaIISI 2026</em> | Universidad Tecnológica Nacional, Facultad Regional Rosario (UTN FRRo)
-            </p>
-            <small>
-                <a href="https://www.linkedin.com/in/santino-cataldi/" target="_blank" class="text-decoration-none">Santino Cataldi</a> &bull; 
-                <a href="https://www.linkedin.com/in/lucio-nahuel-cosentino-6bb057215/" target="_blank" class="text-decoration-none">Lucio Cosentino</a> &bull; 
-                <a href="https://www.linkedin.com/in/gasparmartinez12/" target="_blank" class="text-decoration-none">Gaspar Martinez</a> &bull; 
-                <a href="https://www.linkedin.com/in/tomaswardoloff/" target="_blank" class="text-decoration-none">Tomás Wardoloff</a>
-            </small>
+            <div class="row align-items-center g-3">
+                <div class="col-md-6 text-center text-md-start">
+                    <div class="d-flex align-items-center gap-2 justify-content-center justify-content-md-start mb-1">
+                        <span class="fw-bold"><i class="bi bi-shield-check text-primary"></i> Q-Sec</span>
+                        <span class="text-muted small">&bull; CoNaIISI 2026</span>
+                        <span class="badge bg-secondary-subtle text-muted border">UTN FRRo</span>
+                    </div>
+                    <p class="small text-muted mb-0">
+                        Interactive BB84 Quantum Key Distribution Platform powered by IBM Qiskit 2.2 Aer.
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <div class="small mb-1">
+                        <a href="https://www.linkedin.com/in/santino-cataldi/" target="_blank" rel="noopener noreferrer">Santino Cataldi</a> &bull; 
+                        <a href="https://www.linkedin.com/in/lucio-nahuel-cosentino-6bb057215/" target="_blank" rel="noopener noreferrer">Lucio Cosentino</a> &bull; 
+                        <a href="https://www.linkedin.com/in/gasparmartinez12/" target="_blank" rel="noopener noreferrer">Gaspar Martinez</a> &bull; 
+                        <a href="https://www.linkedin.com/in/tomaswardoloff/" target="_blank" rel="noopener noreferrer">Tomás Wardoloff</a>
+                    </div>
+                    <div class="small text-muted">
+                        Universidad Tecnológica Nacional &bull; Facultad Regional Rosario
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Global Dark Mode Controller -->
+    <!-- Theme Controller -->
     <script>
         function updateThemeUI(theme) {
             const icon = document.getElementById('theme-icon');
@@ -149,25 +185,26 @@
                 icon.className = 'bi bi-sun-fill text-warning';
                 if (text) text.textContent = 'Light';
             } else {
-                icon.className = 'bi bi-moon-stars-fill';
+                icon.className = 'bi bi-moon-stars-fill text-primary';
                 if (text) text.textContent = 'Dark';
             }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'dark';
             updateThemeUI(currentTheme);
 
             const toggleBtn = document.getElementById('theme-toggle');
             if (toggleBtn) {
                 toggleBtn.addEventListener('click', function() {
-                    const activeTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+                    const activeTheme = document.documentElement.getAttribute('data-bs-theme') || 'dark';
                     const newTheme = activeTheme === 'dark' ? 'light' : 'dark';
                     document.documentElement.setAttribute('data-bs-theme', newTheme);
                     try {
                         localStorage.setItem('qsec-theme', newTheme);
                     } catch (e) {}
                     updateThemeUI(newTheme);
+                    window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newTheme } }));
                 });
             }
         });
@@ -176,4 +213,3 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
-

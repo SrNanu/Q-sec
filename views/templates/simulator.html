@@ -1,66 +1,86 @@
 {% extends "base.html" %}
 
-{% block title %}Quantum Simulator{% endblock %}
+{% block title %}Quantum Simulator - Q-Sec{% endblock %}
 
 {% block content %}
 <div class="row">
-    <div class="col-lg-9 mx-auto">
+    <div class="col-lg-10 mx-auto">
+        <!-- Header & Session Status -->
         <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
             <div>
                 <h2 class="mb-1 fw-bold">
                     <i class="bi bi-cpu text-primary"></i> BB84 Protocol Simulator
                 </h2>
-                <p class="text-muted mb-0">Configure quantum transmission parameters, noise rates, and eavesdropping</p>
+                <p class="text-secondary mb-0">Configure quantum states, physical noise channels, and eavesdropping telemetry.</p>
             </div>
             {% if not current_user.is_authenticated %}
-                <span class="badge bg-secondary-subtle text-secondary border px-3 py-2">
-                    <i class="bi bi-person-slash"></i> Guest Mode (Live In-Memory)
+                <span class="badge bg-secondary-subtle text-secondary border px-3 py-2 font-monospace">
+                    <i class="bi bi-person-check text-primary"></i> Guest Mode: In-Memory
                 </span>
             {% endif %}
         </div>
 
         {% if not current_user.is_authenticated %}
-        <div class="alert alert-info d-flex align-items-center mb-4 shadow-sm" role="alert">
-            <i class="bi bi-info-circle-fill fs-4 me-3 text-info"></i>
-            <div>
-                <strong>Zero-Friction Guest Session:</strong> You can run simulations and visualize quantum exchanges without an account.
-                <a href="{{ url_for('register') }}" class="alert-link">Create a free account</a> if you would like to persist your experiments in the session database.
+        <div class="alert alert-info d-flex align-items-center mb-4 shadow-sm border-0" role="alert">
+            <i class="bi bi-shield-lock-fill fs-4 me-3 text-primary"></i>
+            <div class="small">
+                <strong>Zero-Barrier Guest Session:</strong> You can run quantum circuits and inspect qubit wave-functions without an account.
+                <a href="{{ url_for('register') }}" class="alert-link fw-semibold">Create a free account</a> to persist your simulation history in the database.
             </div>
         </div>
         {% endif %}
 
-        <!-- 1-Click Preset Experiments -->
-        <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
-            <div class="card-body p-4">
-                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                    <h5 class="card-title mb-0 fw-bold">
-                        <i class="bi bi-lightning-charge-fill text-warning"></i> Preset Experiments (1-Click Test Scenarios)
-                    </h5>
-                    <span class="small text-muted">Click any preset to auto-configure the simulator:</span>
+        <!-- 1-Click Benchmark Presets -->
+        <div class="card p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <h5 class="fw-bold mb-0">
+                    <i class="bi bi-lightning-charge-fill text-warning"></i> Benchmark Test Scenarios
+                </h5>
+                <span class="small text-muted">Click any scenario to auto-populate parameters:</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="preset-card">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Baseline</span>
+                                <span class="small text-muted font-monospace">N = 20 &bull; &epsilon; = 0.0</span>
+                            </div>
+                            <h6 class="fw-bold mb-1">Ideal Channel</h6>
+                            <p class="small text-secondary mb-3">No Eve, zero noise. Yields matching key with 0% QBER.</p>
+                        </div>
+                        <button type="button" class="btn btn-outline-success btn-sm w-100 fw-semibold" onclick="applyPreset(20, false, 0.0)">
+                            <i class="bi bi-check-circle"></i> Load Preset 1
+                        </button>
+                    </div>
                 </div>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <button type="button" class="btn btn-outline-success w-100 text-start p-3 h-100 preset-btn"
-                                onclick="applyPreset(20, false, 0.0)">
-                            <div class="fw-bold mb-1"><i class="bi bi-check-circle-fill"></i> Preset 1: Ideal Channel</div>
-                            <small class="text-muted d-block">20 qubits, No Eve, Noise = 0.00</small>
-                            <span class="badge bg-success-subtle text-success mt-2">QBER &approx; 0% &bull; Key Secure</span>
+                <div class="col-md-4">
+                    <div class="preset-card">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Active Threat</span>
+                                <span class="small text-muted font-monospace">Eve Active</span>
+                            </div>
+                            <h6 class="fw-bold mb-1">Intercept-Resend</h6>
+                            <p class="small text-secondary mb-3">Eve measures in random bases, triggering ~25% QBER.</p>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger btn-sm w-100 fw-semibold" onclick="applyPreset(20, true, 0.0)">
+                            <i class="bi bi-shield-exclamation"></i> Load Preset 2
                         </button>
                     </div>
-                    <div class="col-md-4">
-                        <button type="button" class="btn btn-outline-danger w-100 text-start p-3 h-100 preset-btn"
-                                onclick="applyPreset(20, true, 0.0)">
-                            <div class="fw-bold mb-1"><i class="bi bi-shield-exclamation"></i> Preset 2: Eavesdropping</div>
-                            <small class="text-muted d-block">20 qubits, Eve active, Noise = 0.00</small>
-                            <span class="badge bg-danger-subtle text-danger mt-2">QBER &approx; 25% &bull; Compromised</span>
-                        </button>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="button" class="btn btn-outline-warning w-100 text-start p-3 h-100 preset-btn"
-                                onclick="applyPreset(20, false, 0.15)">
-                            <div class="fw-bold mb-1"><i class="bi bi-soundwave"></i> Preset 3: Noisy Channel</div>
-                            <small class="text-muted d-block">20 qubits, No Eve, Noise = 0.15</small>
-                            <span class="badge bg-warning-subtle text-warning mt-2">Decoherence &bull; QBER &gt; 11%</span>
+                </div>
+                <div class="col-md-4">
+                    <div class="preset-card">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Decoherence</span>
+                                <span class="small text-muted font-monospace">&epsilon; = 0.15</span>
+                            </div>
+                            <h6 class="fw-bold mb-1">Noisy Channel</h6>
+                            <p class="small text-secondary mb-3">Optical fiber attenuation exceeding 11% cutoff.</p>
+                        </div>
+                        <button type="button" class="btn btn-outline-warning btn-sm w-100 fw-semibold" onclick="applyPreset(20, false, 0.15)">
+                            <i class="bi bi-soundwave"></i> Load Preset 3
                         </button>
                     </div>
                 </div>
@@ -68,96 +88,135 @@
         </div>
 
         <!-- Simulator Configuration Form -->
-        <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
-            <div class="card-body p-4">
-                <h5 class="card-title fw-bold mb-3">
-                    <i class="bi bi-sliders"></i> Simulation Parameters
-                </h5>
+        <div class="card p-4 p-md-5 mb-4 border-accent-blue">
+            <h4 class="fw-bold mb-4">
+                <i class="bi bi-sliders text-primary"></i> Simulation Parameters
+            </h4>
+            
+            <form method="POST" action="{{ url_for('simulator') }}" id="simulation-form">
+                {{ form.hidden_tag() }}
                 
-                <form method="POST" action="{{ url_for('simulator') }}" id="simulation-form">
-                    {{ form.hidden_tag() }}
-                    
-                    <div class="mb-4">
-                        <label for="key_length" class="form-label fw-semibold">
+                <!-- Qubit Count Selection -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label for="key_length" class="form-label fw-semibold mb-0">
                             {{ form.key_length.label.text }}
                         </label>
-                        {{ form.key_length(class="form-control form-control-lg" + (" is-invalid" if form.key_length.errors else ""), id="key_length") }}
-                        {% if form.key_length.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.key_length.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <div class="form-text">
-                            Number of initial qubits prepared and transmitted by Alice (10 to 1,000 qubits).
-                        </div>
+                        <span class="small font-monospace text-primary fw-semibold" id="key-length-indicator">20 Qubits</span>
                     </div>
-                    
-                    <div class="mb-4 p-3 bg-body-secondary rounded-3 border">
-                        <div class="form-check form-switch fs-5">
-                            {{ form.has_eve(class="form-check-input", id="has_eve") }}
+
+                    <!-- Quick-Select Segmented Qubit Chips -->
+                    <div class="d-flex gap-2 flex-wrap mb-2">
+                        <button type="button" class="qubit-pill active" onclick="setQubits(20, this)">20</button>
+                        <button type="button" class="qubit-pill" onclick="setQubits(50, this)">50</button>
+                        <button type="button" class="qubit-pill" onclick="setQubits(100, this)">100</button>
+                        <button type="button" class="qubit-pill" onclick="setQubits(256, this)">256</button>
+                        <button type="button" class="qubit-pill" onclick="setQubits(500, this)">500</button>
+                        <button type="button" class="qubit-pill" onclick="setQubits(1000, this)">1,000</button>
+                    </div>
+
+                    {{ form.key_length(class="form-control form-control-lg font-monospace" + (" is-invalid" if form.key_length.errors else ""), id="key_length", oninput="updateQubitIndicator(this.value)") }}
+                    {% if form.key_length.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.key_length.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text small text-muted">
+                        Number of single-photon quantum states prepared and transmitted by Alice (supported: 10 to 1,000 qubits).
+                    </div>
+                </div>
+                
+                <!-- Active Eavesdropper (Eve) Toggle -->
+                <div class="mb-4 threat-switch-card" id="eve-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="form-check form-switch fs-5 mb-0">
+                            {{ form.has_eve(class="form-check-input", id="has_eve", onchange="handleEveToggle(this.checked)") }}
                             <label class="form-check-label fw-semibold fs-6 pt-1" for="has_eve">
                                 {{ form.has_eve.label.text }}
                             </label>
                         </div>
-                        <div class="form-text mt-1">
-                            When active, Eve performs an intercept-resend attack in a random basis, collapsing qubit wave-functions and inducing an expected 25% QBER.
-                        </div>
+                        <span id="threat-indicator" class="badge bg-secondary-subtle text-muted border font-monospace">
+                            Eve Inactive
+                        </span>
                     </div>
+                    <div class="form-text mt-2 small text-secondary">
+                        When enabled, Eve intercepts photons along the fiber/free-space link and measures them in random bases ($\{+, \times\}$). This causes irreversible wave-function collapse and introduces a detectable theoretical error rate ($\approx 25\%$).
+                    </div>
+                </div>
 
-                    <div class="mb-4 p-3 bg-body-secondary rounded-3 border">
-                        <label for="noise_rate" class="form-label fw-semibold">
+                <!-- Depolarizing Channel Noise Rate -->
+                <div class="mb-4 p-3 rounded border bg-body-tertiary">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label for="noise_rate" class="form-label fw-semibold mb-0">
                             Channel Depolarizing Noise Rate ($\epsilon$)
                         </label>
-                        <div class="row align-items-center g-2">
-                            <div class="col-8 col-sm-9">
-                                <input type="range" class="form-range" id="noise_range" min="0" max="0.5" step="0.01" value="{{ form.noise_rate.data or 0.0 }}" oninput="updateNoiseInput(this.value)">
-                            </div>
-                            <div class="col-4 col-sm-3">
-                                {{ form.noise_rate(class="form-control text-center fw-bold" + (" is-invalid" if form.noise_rate.errors else ""), id="noise_rate", step="0.01", min="0.0", max="1.0", oninput="updateNoiseRange(this.value)") }}
-                            </div>
+                        <span id="viability-pill" class="badge bg-success-subtle text-success border border-success-subtle font-monospace">
+                            Safe: Distillation Feasible
+                        </span>
+                    </div>
+
+                    <div class="row align-items-center g-3">
+                        <div class="col-8 col-sm-9">
+                            <input type="range" class="form-range" id="noise_range" min="0" max="0.5" step="0.01" value="{{ form.noise_rate.data or 0.0 }}" oninput="updateNoiseInput(this.value)">
                         </div>
-                        {% if form.noise_rate.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.noise_rate.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <div class="form-text mt-2">
-                            Models realistic quantum channel decoherence via Qiskit Aer's <code>depolarizing_error</code> ($\mathcal{E}(\rho) = (1-\epsilon)\rho + \frac{\epsilon}{3}(X\rho X + Y\rho Y + Z\rho Z)$). Rates above 11% cause the Secret Key Rate to drop to zero.
+                        <div class="col-4 col-sm-3">
+                            {{ form.noise_rate(class="form-control text-center font-monospace fw-bold" + (" is-invalid" if form.noise_rate.errors else ""), id="noise_rate", step="0.01", min="0.0", max="1.0", oninput="updateNoiseRange(this.value)") }}
                         </div>
                     </div>
+                    {% if form.noise_rate.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.noise_rate.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                     
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg shadow-sm py-3 fw-bold">
-                            <i class="bi bi-play-circle-fill me-2"></i> Run Quantum Simulation
-                        </button>
+                    <div class="d-flex justify-content-between small text-muted font-monospace mt-2">
+                        <span>0.0% (Ideal)</span>
+                        <span class="text-danger fw-semibold">&bull; 11% Shor-Preskill Limit</span>
+                        <span>50.0% (Max Noise)</span>
                     </div>
-                </form>
-            </div>
+                    <div class="form-text mt-2 small text-secondary">
+                        Models channel decoherence via Qiskit Aer's <code>depolarizing_error</code> ($\mathcal{E}(\rho) = (1-\epsilon)\rho + \frac{\epsilon}{3}(X\rho X + Y\rho Y + Z\rho Z)$). Noise rates exceeding $11.00\%$ force the asymptotic secret key rate to drop to zero.
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 pt-2">
+                    <button type="submit" class="btn btn-primary btn-lg shadow-sm py-3 fw-bold">
+                        <i class="bi bi-play-circle-fill"></i> Execute Quantum Circuit Simulation
+                    </button>
+                </div>
+            </form>
         </div>
         
         <!-- Theoretical Protocol Accordion -->
-        <div class="accordion shadow-sm" id="infoAccordion">
-            <div class="accordion-item border-0">
+        <div class="accordion shadow-sm card mb-4" id="infoAccordion">
+            <div class="accordion-item border-0 bg-transparent">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-                        <i class="bi bi-mortarboard-fill me-2 text-primary"></i> Understanding the BB84 Protocol & Security Bounds
+                    <button class="accordion-button collapsed fw-semibold bg-transparent text-body" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        <i class="bi bi-mortarboard-fill me-2 text-primary"></i> Understanding the BB84 Protocol &amp; Security Bounds
                     </button>
                 </h2>
                 <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#infoAccordion">
-                    <div class="accordion-body bg-light">
-                        <ol class="mb-0 small text-muted">
-                            <li class="mb-2"><strong>Alice encodes bits:</strong> Maps classical bits to qubits using $\{|0\rangle, |1\rangle\}$ (rectilinear) or $\{|+\rangle, |-\rangle\}$ (diagonal).</li>
-                            <li class="mb-2"><strong>Quantum channel:</strong> Qubits transit through the optical fiber or free space, subject to depolarizing noise $\epsilon$.</li>
-                            <li class="mb-2"><strong>Eavesdropping (Eve):</strong> Any measurement without knowledge of Alice's basis collapses the state, causing irreversible errors.</li>
-                            <li class="mb-2"><strong>Bob measures:</strong> Projects each qubit onto an independently chosen random basis.</li>
-                            <li class="mb-2"><strong>Basis reconciliation (Sifting):</strong> Alice and Bob discard bits with discordant bases over a classical channel.</li>
-                            <li class="mb-2"><strong>Parameter estimation:</strong> QBER is estimated from a random sample. If $\text{QBER} < 11\%$, privacy amplification extracts the secret key.</li>
-                            <li><strong>Asymptotic Secret Key Rate:</strong> $R \ge \max(0, 1 - 2h(\text{QBER}))$ under one-way classical error correction (Shor-Preskill / Devetak-Winter bound).</li>
-                        </ol>
+                    <div class="accordion-body border-top">
+                        <div class="row g-3 small text-secondary">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-primary">1. Single-Photon State Preparation</h6>
+                                <p>Alice generates random classical bits $b_i \in \{0, 1\}$ and assigns each to rectilinear ($+$: $|0\rangle, |1\rangle$) or diagonal ($\times$: $|+\rangle, |-\rangle$) polarizations.</p>
+
+                                <h6 class="fw-bold text-primary">2. Quantum No-Cloning Theorem</h6>
+                                <p>Wootters &amp; Zurek (1982) proved that an unknown quantum state cannot be copied without disturbance. Any measurement by Eve introduces irreversible entropy.</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-primary">3. Basis Sifting &amp; Estimation</h6>
+                                <p>Bob projects incoming qubits onto independent random bases. Over an authenticated classical channel, they compare bases and discard mismatches ($\approx 50\%$).</p>
+
+                                <h6 class="fw-bold text-primary">4. Devetak-Winter Asymptotic Secret Key Rate</h6>
+                                <p>If $\text{QBER} < 11.00\%$, one-way error correction and privacy amplification guarantee a distillable secret key rate $R_\infty \ge \max(0, 1 - 2h(\text{QBER}))$.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -166,25 +225,75 @@
 </div>
 
 <script>
-function applyPreset(keyLength, hasEve, noiseRate) {
-    document.getElementById('key_length').value = keyLength;
-    document.getElementById('has_eve').checked = hasEve;
-    document.getElementById('noise_rate').value = noiseRate;
-    document.getElementById('noise_range').value = noiseRate;
-    
-    // Highlight the card slightly and scroll into view
-    const formCard = document.getElementById('simulation-form');
-    formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+function setQubits(n, elem) {
+    document.getElementById('key_length').value = n;
+    updateQubitIndicator(n);
+    document.querySelectorAll('.qubit-pill').forEach(b => b.classList.remove('active'));
+    if (elem) elem.classList.add('active');
+}
+
+function updateQubitIndicator(n) {
+    document.getElementById('key-length-indicator').textContent = `${n} Qubits`;
+}
+
+function handleEveToggle(isChecked) {
+    const eveCard = document.getElementById('eve-card');
+    const indicator = document.getElementById('threat-indicator');
+    if (isChecked) {
+        eveCard.classList.add('threat-active');
+        indicator.className = 'badge bg-danger-subtle text-danger border border-danger-subtle font-monospace';
+        indicator.textContent = 'Active Intercept-Resend Threat';
+    } else {
+        eveCard.classList.remove('threat-active');
+        indicator.className = 'badge bg-secondary-subtle text-muted border font-monospace';
+        indicator.textContent = 'Eve Inactive';
+    }
 }
 
 function updateNoiseInput(val) {
-    document.getElementById('noise_rate').value = parseFloat(val).toFixed(2);
+    const num = parseFloat(val) || 0.0;
+    document.getElementById('noise_rate').value = num.toFixed(2);
+    checkNoiseViability(num);
 }
 
 function updateNoiseRange(val) {
     const num = parseFloat(val) || 0.0;
     document.getElementById('noise_range').value = num;
+    checkNoiseViability(num);
 }
+
+function checkNoiseViability(noise) {
+    const pill = document.getElementById('viability-pill');
+    if (noise < 0.11) {
+        pill.className = 'badge bg-success-subtle text-success border border-success-subtle font-monospace';
+        pill.textContent = 'Safe: Distillation Feasible';
+    } else {
+        pill.className = 'badge bg-danger-subtle text-danger border border-danger-subtle font-monospace';
+        pill.textContent = 'Warning: Exceeds 11% Limit';
+    }
+}
+
+function applyPreset(keyLength, hasEve, noiseRate) {
+    setQubits(keyLength);
+    
+    const eveCheckbox = document.getElementById('has_eve');
+    eveCheckbox.checked = hasEve;
+    handleEveToggle(hasEve);
+
+    updateNoiseInput(noiseRate);
+    updateNoiseRange(noiseRate);
+
+    // Scroll to form smoothly
+    const form = document.getElementById('simulation-form');
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const initialKey = document.getElementById('key_length').value || 20;
+    updateQubitIndicator(initialKey);
+    const initialNoise = parseFloat(document.getElementById('noise_rate').value) || 0.0;
+    checkNoiseViability(initialNoise);
+    handleEveToggle(document.getElementById('has_eve').checked);
+});
 </script>
 {% endblock %}
-

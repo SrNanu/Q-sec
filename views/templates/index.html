@@ -5,71 +5,123 @@
 {% block content %}
 <div class="py-2">
   <!-- Hero Section -->
-  <div class="row align-items-center mb-5 pt-3">
-    <div class="col-lg-10 mx-auto text-center">
-      <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill border bg-body-secondary text-secondary small fw-medium mb-3">
-        <span class="badge bg-primary rounded-pill px-2 py-1">CoNaIISI 2026</span>
-        <span>UTN FRRo &bull; Quantum Information & Cryptography Research</span>
-      </div>
-      
-      <h1 class="display-5 fw-bold tracking-tight mb-3">
-        BB84 Quantum Key Distribution Simulator
-      </h1>
-      
-      <p class="lead text-body-secondary mb-4 mx-auto" style="max-width: 780px;">
-        High-fidelity physical modeling of single-photon state preparation, eavesdropper interception analysis, 
-        and Devetak-Winter secret key rate distillation powered by IBM Qiskit 2.2 Aer.
-      </p>
+  <div class="hero-section">
+    <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill border bg-body-tertiary text-secondary small fw-medium mb-3">
+      <span class="badge bg-primary text-white rounded-pill px-2.5 py-1 fw-semibold">CoNaIISI 2026</span>
+      <span>UTN FRRo &bull; Quantum Information &amp; Cryptography Research</span>
+    </div>
+    
+    <h1 class="hero-title">
+      BB84 Quantum Key Distribution Platform
+    </h1>
+    
+    <p class="hero-subtitle">
+      High-fidelity simulation of single-photon quantum state preparation, eavesdropper interception analysis, 
+      and Devetak-Winter secret key rate distillation powered by <strong>IBM Qiskit 2.2 Aer</strong>.
+    </p>
 
-      <div class="d-flex justify-content-center gap-2 flex-wrap mb-4">
-        <a href="{{ url_for('simulator') }}" class="btn btn-primary btn-lg px-4 py-2.5 shadow-sm fw-semibold">
-          <i class="bi bi-cpu me-1"></i> Launch Simulator
-        </a>
-        <a href="{{ url_for('architecture') }}" class="btn btn-outline-secondary btn-lg px-4 py-2.5 fw-semibold">
-          <i class="bi bi-diagram-3 me-1"></i> System Architecture
-        </a>
-        <a href="{{ url_for('animation') }}" class="btn btn-outline-secondary btn-lg px-3 py-2.5 fw-semibold">
-          <i class="bi bi-lightning-charge me-1"></i> Protocol Visualizer
-        </a>
-      </div>
+    <div class="d-flex justify-content-center gap-3 flex-wrap mb-4">
+      <a href="{{ url_for('simulator') }}" class="btn btn-primary btn-lg px-4 py-2.5 shadow-sm">
+        <i class="bi bi-cpu"></i> Launch Simulator
+      </a>
+      <a href="{{ url_for('animation') }}" class="btn btn-outline-primary btn-lg px-4 py-2.5">
+        <i class="bi bi-lightning-charge"></i> Live Protocol Visualizer
+      </a>
+      <a href="{{ url_for('architecture') }}" class="btn btn-outline-secondary btn-lg px-3 py-2.5">
+        <i class="bi bi-diagram-3"></i> Architecture
+      </a>
+    </div>
+
+    <div class="d-flex justify-content-center align-items-center gap-4 text-muted small flex-wrap pt-2">
+      <span><i class="bi bi-shield-check text-success me-1"></i> Information-Theoretic Security</span>
+      <span><i class="bi bi-cpu text-primary me-1"></i> Depolarizing Noise $\mathcal{E}(\rho)$</span>
+      <span><i class="bi bi-person-check text-secondary me-1"></i> Zero-Barrier Guest Mode</span>
     </div>
   </div>
 
   <!-- Key Technical Specifications Bar -->
   <div class="row g-3 mb-5">
     <div class="col-6 col-md-3">
-      <div class="card h-100 border bg-body-tertiary">
-        <div class="card-body p-3 text-center">
-          <div class="text-body-secondary small text-uppercase fw-semibold mb-1">State Preparation</div>
-          <div class="h4 fw-bold mb-0 text-primary">10 &ndash; 1,000</div>
-          <div class="small text-body-secondary">Single Qubits / Run</div>
-        </div>
+      <div class="card h-100 p-3 text-center border-accent-blue">
+        <div class="text-secondary small text-uppercase fw-semibold mb-1" style="font-size: 0.76rem;">State Preparation</div>
+        <div class="h3 fw-bold mb-0 text-primary font-monospace">10 &ndash; 1,000</div>
+        <div class="small text-muted">Single Qubits / Run</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="card h-100 border bg-body-tertiary">
-        <div class="card-body p-3 text-center">
-          <div class="text-body-secondary small text-uppercase fw-semibold mb-1">Noise Engine</div>
-          <div class="h4 fw-bold mb-0 text-success">Qiskit Aer</div>
-          <div class="small text-body-secondary">Depolarizing Channel</div>
-        </div>
+      <div class="card h-100 p-3 text-center border-accent-emerald">
+        <div class="text-secondary small text-uppercase fw-semibold mb-1" style="font-size: 0.76rem;">Noise Engine</div>
+        <div class="h3 fw-bold mb-0 text-success font-monospace">Qiskit Aer</div>
+        <div class="small text-muted">Depolarizing Channel</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="card h-100 border bg-body-tertiary">
-        <div class="card-body p-3 text-center">
-          <div class="text-body-secondary small text-uppercase fw-semibold mb-1">Security Threshold</div>
-          <div class="h4 fw-bold mb-0 text-warning">11.0%</div>
-          <div class="small text-body-secondary">Shor-Preskill QBER Cutoff</div>
-        </div>
+      <div class="card h-100 p-3 text-center border-accent-ruby">
+        <div class="text-secondary small text-uppercase fw-semibold mb-1" style="font-size: 0.76rem;">Security Threshold</div>
+        <div class="h3 fw-bold mb-0 text-danger font-monospace">11.0%</div>
+        <div class="small text-muted">Shor-Preskill Cutoff</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="card h-100 border bg-body-tertiary">
-        <div class="card-body p-3 text-center">
-          <div class="text-body-secondary small text-uppercase fw-semibold mb-1">Access Model</div>
-          <div class="h4 fw-bold mb-0 text-info">Zero-Barrier</div>
-          <div class="small text-body-secondary">Guest Mode &amp; REST API</div>
+      <div class="card h-100 p-3 text-center border-accent-blue">
+        <div class="text-secondary small text-uppercase fw-semibold mb-1" style="font-size: 0.76rem;">Distillation Bound</div>
+        <div class="h3 fw-bold mb-0 text-primary font-monospace">R &ge; 1 - 2h(p)</div>
+        <div class="small text-muted">Devetak-Winter 2005</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Quantum Telemetry Sandbox -->
+  <div class="card p-4 p-md-5 mb-5">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <div class="d-inline-flex align-items-center gap-2 px-2.5 py-1 rounded bg-body-tertiary border text-secondary small fw-semibold mb-2">
+          <i class="bi bi-calculator text-primary"></i> Interactive Quantum Telemetry
+        </div>
+        <h3 class="fw-bold mb-2">Real-Time Secret Key Rate Estimator</h3>
+        <p class="text-secondary mb-3">
+          Under the <strong>Shor-Preskill &amp; Devetak-Winter</strong> bounds, the asymptotic secret key rate per sifted bit is:
+        </p>
+        <div class="p-3 rounded bg-body-tertiary border font-monospace mb-3 text-center">
+          $$R_\infty = \max\Big(0, \, 1 - 2 h(\text{QBER})\Big), \quad h(p) = -p \log_2(p) - (1-p) \log_2(1-p)$$
+        </div>
+        <p class="small text-muted mb-0">
+          Slide to vary the measured Quantum Bit Error Rate ($\text{QBER}$) to observe the exact phase transition where key distillation drops to zero ($11.00\%$).
+        </p>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="p-4 rounded border bg-body-tertiary">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label for="sandbox-qber" class="form-label fw-semibold mb-0">Measured QBER: <span id="sandbox-qber-val" class="font-monospace text-primary fw-bold">3.5%</span></label>
+            <span id="sandbox-status-badge" class="badge bg-success-subtle text-success border border-success-subtle font-monospace">Secure Distillation</span>
+          </div>
+          
+          <input type="range" class="form-range mb-4" id="sandbox-qber" min="0" max="0.25" step="0.005" value="0.035" oninput="updateQuantumSandbox(this.value)">
+
+          <div class="row g-2 font-monospace small mb-3">
+            <div class="col-6">
+              <div class="p-2.5 rounded bg-surface border text-center">
+                <div class="text-muted text-uppercase" style="font-size: 0.72rem;">Shannon Entropy $h(p)$</div>
+                <div id="sandbox-entropy" class="fw-bold fs-6 text-warning">0.219</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2.5 rounded bg-surface border text-center">
+                <div class="text-muted text-uppercase" style="font-size: 0.72rem;">Secret Key Rate ($R$)</div>
+                <div id="sandbox-skr" class="fw-bold fs-6 text-success">0.562</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="progress" style="height: 8px;">
+            <div id="sandbox-progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 56.2%;"></div>
+          </div>
+          <div class="d-flex justify-content-between small text-muted font-monospace mt-1">
+            <span>0.0 (No Key)</span>
+            <span class="text-danger fw-semibold">&bull; 11% Cutoff</span>
+            <span>1.0 (Ideal)</span>
+          </div>
         </div>
       </div>
     </div>
@@ -77,134 +129,100 @@
 
   <!-- Benchmark Presets Section -->
   <div class="mb-5">
-    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
       <div>
-        <h4 class="fw-bold mb-1">Empirical Benchmark Presets</h4>
-        <p class="text-body-secondary small mb-0">Pre-calibrated experimental configurations to observe key distribution boundaries.</p>
+        <h3 class="fw-bold mb-1">Empirical Benchmark Presets</h3>
+        <p class="text-secondary small mb-0">Pre-calibrated experimental scenarios to test physical channel boundaries in 1 click.</p>
       </div>
-      <a href="{{ url_for('simulator') }}" class="small text-decoration-none fw-semibold">
-        Custom Parameterization <i class="bi bi-arrow-right"></i>
+      <a href="{{ url_for('simulator') }}" class="btn btn-sm btn-outline-primary fw-semibold">
+        Custom Parameterization <i class="bi bi-arrow-right ms-1"></i>
       </a>
     </div>
 
-    <div class="row g-3">
-      <!-- Preset 1: Ideal Channel -->
+    <div class="row g-4">
+      <!-- Preset 1 -->
       <div class="col-lg-4">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4 d-flex flex-column justify-content-between">
-            <div>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Baseline</span>
-                <span class="small font-monospace text-body-secondary">N = 20 &bull; &epsilon; = 0.0</span>
+        <div class="preset-card">
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="badge bg-success-subtle text-success border border-success-subtle">Baseline</span>
+              <span class="small font-monospace text-muted">N = 20 &bull; &epsilon; = 0.0</span>
+            </div>
+            <h5 class="fw-bold mb-2">Ideal Channel</h5>
+            <p class="text-secondary small mb-3">
+              Noiseless transmission with no eavesdropper. Basis reconciliation yields matching key with 0% bit error.
+            </p>
+            <div class="p-3 rounded bg-body-tertiary border font-monospace small mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Expected QBER:</span>
+                <span class="fw-bold text-success">&approx; 0.0%</span>
               </div>
-              <h5 class="fw-bold mb-2">Ideal Channel</h5>
-              <p class="text-body-secondary small mb-3">
-                Noiseless transmission with no eavesdropper. Basis reconciliation yields matching key without bit errors.
-              </p>
-              <div class="p-2.5 rounded bg-body-secondary border font-monospace small mb-3">
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Expected QBER:</span>
-                  <span class="fw-bold text-success">&approx; 0.0%</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Secret Key Rate (R):</span>
-                  <span class="fw-bold text-success">&approx; 1.0</span>
-                </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Secret Key Rate (R):</span>
+                <span class="fw-bold text-success">&approx; 1.000</span>
               </div>
             </div>
-            <a href="{{ url_for('animation', key_length=20, has_eve=0, noise_rate=0.0) }}" class="btn btn-outline-success w-100 fw-semibold">
-              <i class="bi bi-play-fill"></i> Run Baseline
-            </a>
           </div>
+          <a href="{{ url_for('animation', key_length=20, has_eve=0, noise_rate=0.0) }}" class="btn btn-outline-success w-100 fw-semibold">
+            <i class="bi bi-play-fill"></i> Run Baseline Scenario
+          </a>
         </div>
       </div>
 
-      <!-- Preset 2: Eavesdropping Attack -->
+      <!-- Preset 2 -->
       <div class="col-lg-4">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4 d-flex flex-column justify-content-between">
-            <div>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Active Threat</span>
-                <span class="small font-monospace text-body-secondary">Eve = Active</span>
+        <div class="preset-card">
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Active Threat</span>
+              <span class="small font-monospace text-muted">Eve = Active</span>
+            </div>
+            <h5 class="fw-bold mb-2">Intercept-Resend Attack</h5>
+            <p class="text-secondary small mb-3">
+              Eve measures qubits in random bases, collapsing wave-functions and triggering detectable error rates.
+            </p>
+            <div class="p-3 rounded bg-body-tertiary border font-monospace small mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Expected QBER:</span>
+                <span class="fw-bold text-danger">&approx; 25.0%</span>
               </div>
-              <h5 class="fw-bold mb-2">Intercept-Resend Attack</h5>
-              <p class="text-body-secondary small mb-3">
-                Eve measures qubits in random bases, inducing wave-function collapse and detectable error rates.
-              </p>
-              <div class="p-2.5 rounded bg-body-secondary border font-monospace small mb-3">
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Expected QBER:</span>
-                  <span class="fw-bold text-danger">&approx; 25.0%</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Protocol Outcome:</span>
-                  <span class="fw-bold text-danger">ABORT (QBER &gt; 11%)</span>
-                </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Protocol Outcome:</span>
+                <span class="fw-bold text-danger">ABORT (&gt; 11%)</span>
               </div>
             </div>
-            <a href="{{ url_for('animation', key_length=20, has_eve=1, noise_rate=0.0) }}" class="btn btn-outline-danger w-100 fw-semibold">
-              <i class="bi bi-shield-exclamation"></i> Simulate Attack
-            </a>
           </div>
+          <a href="{{ url_for('animation', key_length=20, has_eve=1, noise_rate=0.0) }}" class="btn btn-outline-danger w-100 fw-semibold">
+            <i class="bi bi-shield-exclamation"></i> Simulate Eve Attack
+          </a>
         </div>
       </div>
 
-      <!-- Preset 3: Depolarizing Noise -->
+      <!-- Preset 3 -->
       <div class="col-lg-4">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4 d-flex flex-column justify-content-between">
-            <div>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">Environmental Noise</span>
-                <span class="small font-monospace text-body-secondary">&epsilon; = 0.15</span>
+        <div class="preset-card">
+          <div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Optical Decoherence</span>
+              <span class="small font-monospace text-muted">&epsilon; = 0.15</span>
+            </div>
+            <h5 class="fw-bold mb-2">Depolarizing Channel</h5>
+            <p class="text-secondary small mb-3">
+              Simulates optical fiber attenuation and environmental decoherence through Qiskit noise models.
+            </p>
+            <div class="p-3 rounded bg-body-tertiary border font-monospace small mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Noise Rate (&epsilon;):</span>
+                <span class="fw-bold text-warning">15.0%</span>
               </div>
-              <h5 class="fw-bold mb-2">Depolarizing Channel</h5>
-              <p class="text-body-secondary small mb-3">
-                Simulates optical fiber attenuation and decoherence through Qiskit depolarizing noise channels.
-              </p>
-              <div class="p-2.5 rounded bg-body-secondary border font-monospace small mb-3">
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Noise Rate (&epsilon;):</span>
-                  <span class="fw-bold text-warning-emphasis">15.0%</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Threshold Status:</span>
-                  <span class="fw-bold text-warning-emphasis">Exceeds 11% Limit</span>
-                </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Threshold Status:</span>
+                <span class="fw-bold text-warning">Exceeds 11% Limit</span>
               </div>
             </div>
-            <a href="{{ url_for('animation', key_length=20, has_eve=0, noise_rate=0.15) }}" class="btn btn-outline-warning w-100 fw-semibold">
-              <i class="bi bi-soundwave"></i> Calibrate Noise
-            </a>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Interactive System Architecture Banner -->
-  <div class="card border bg-body-tertiary mb-5">
-    <div class="card-body p-4 p-md-5">
-      <div class="row align-items-center g-4">
-        <div class="col-lg-8">
-          <div class="d-inline-flex align-items-center gap-2 px-2.5 py-1 rounded bg-primary-subtle text-primary small fw-semibold mb-2">
-            <i class="bi bi-diagram-3"></i> System Topology
-          </div>
-          <h3 class="fw-bold mb-2">Interactive 3-Layer System Architecture</h3>
-          <p class="text-body-secondary mb-3">
-            Q-Sec separates presentation (Flask guest/auth endpoints), quantum domain operations (IBM Qiskit 2.2 Aer simulation), 
-            and data persistence (idempotent schema migrations) into cleanly decoupled tiers.
-          </p>
-          <div class="d-flex gap-3 flex-wrap small text-body-secondary">
-            <div><i class="bi bi-check2 text-primary me-1"></i><strong>Presentation:</strong> REST API + Photon SVG Engine</div>
-            <div><i class="bi bi-check2 text-primary me-1"></i><strong>Quantum Domain:</strong> Aer Simulator + Noise Models</div>
-            <div><i class="bi bi-check2 text-primary me-1"></i><strong>Data Tier:</strong> Dynamic Column Evolution</div>
-          </div>
-        </div>
-        <div class="col-lg-4 text-lg-end">
-          <a href="{{ url_for('architecture') }}" class="btn btn-primary btn-lg px-4 py-2.5 shadow-sm fw-semibold text-nowrap">
-            <i class="bi bi-diagram-3-fill me-1"></i> View Interactive Diagram
+          <a href="{{ url_for('animation', key_length=20, has_eve=0, noise_rate=0.15) }}" class="btn btn-outline-warning w-100 fw-semibold">
+            <i class="bi bi-soundwave"></i> Calibrate Noise Model
           </a>
         </div>
       </div>
@@ -214,66 +232,140 @@
   <!-- Technical Protocol Pipeline Section -->
   <div class="mb-5">
     <div class="text-center mb-4">
-      <h3 class="fw-bold mb-1">BB84 Quantum Key Distribution Protocol Pipeline</h3>
-      <p class="text-body-secondary small mx-auto" style="max-width: 650px;">
-        Information-theoretic security established by the Heisenberg Uncertainty Principle and the Quantum No-Cloning Theorem.
+      <h3 class="fw-bold mb-1">BB84 Protocol Pipeline</h3>
+      <p class="text-secondary small mx-auto" style="max-width: 620px;">
+        Unconditional security established by the Heisenberg Uncertainty Principle and the Quantum No-Cloning Theorem.
       </p>
     </div>
 
     <div class="row g-3">
       <!-- Stage 1 -->
       <div class="col-md-6 col-lg-3">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4">
-            <div class="text-primary font-monospace fw-bold small mb-2">STAGE 01</div>
-            <h6 class="fw-bold mb-2">State Preparation</h6>
-            <p class="text-body-secondary small mb-0">
-              Alice generates classical bits $b_i \in \{0, 1\}$ and randomly encodes each into rectilinear ($+$) or diagonal ($\times$) single-photon states.
-            </p>
+        <div class="card h-100 p-4">
+          <div class="text-primary font-monospace fw-bold small mb-2">STAGE 01</div>
+          <h6 class="fw-bold mb-2">State Preparation</h6>
+          <p class="text-secondary small mb-3">
+            Alice generates classical bits $b_i \in \{0, 1\}$ and encodes them into rectilinear ($+$) or diagonal ($\times$) single-photon states:
+          </p>
+          <div class="d-flex gap-1 justify-content-center font-monospace small">
+            <span class="badge bg-secondary-subtle text-secondary border">|0&rang;</span>
+            <span class="badge bg-secondary-subtle text-secondary border">|1&rang;</span>
+            <span class="badge bg-secondary-subtle text-secondary border">|+&rang;</span>
+            <span class="badge bg-secondary-subtle text-secondary border">|-&rang;</span>
           </div>
         </div>
       </div>
 
       <!-- Stage 2 -->
       <div class="col-md-6 col-lg-3">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4">
-            <div class="text-primary font-monospace fw-bold small mb-2">STAGE 02</div>
-            <h6 class="fw-bold mb-2">Quantum Channel</h6>
-            <p class="text-body-secondary small mb-0">
-              Photons traverse an optical fiber or free-space channel modeled via depolarizing noise $\mathcal{E}(\rho)$, vulnerable to eavesdropper intercept.
-            </p>
+        <div class="card h-100 p-4">
+          <div class="text-primary font-monospace fw-bold small mb-2">STAGE 02</div>
+          <h6 class="fw-bold mb-2">Quantum Channel</h6>
+          <p class="text-secondary small mb-3">
+            Photons traverse an optical fiber or free-space channel modeled via Qiskit depolarizing noise $\mathcal{E}(\rho)$, interceptable by Eve:
+          </p>
+          <div class="font-monospace small text-muted text-center">
+            $\mathcal{E}(\rho) = (1-\epsilon)\rho + \frac{\epsilon}{3}\sum \sigma_i \rho \sigma_i$
           </div>
         </div>
       </div>
 
       <!-- Stage 3 -->
       <div class="col-md-6 col-lg-3">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4">
-            <div class="text-primary font-monospace fw-bold small mb-2">STAGE 03</div>
-            <h6 class="fw-bold mb-2">Projective Measurement</h6>
-            <p class="text-body-secondary small mb-0">
-              Bob independently selects random bases to measure incoming qubits. Sifting discards discordant bases over an authenticated classical channel.
-            </p>
+        <div class="card h-100 p-4">
+          <div class="text-primary font-monospace fw-bold small mb-2">STAGE 03</div>
+          <h6 class="fw-bold mb-2">Projective Measurement</h6>
+          <p class="text-secondary small mb-3">
+            Bob independently chooses random bases. Discordant bases are discarded via sifting over an authenticated classical channel:
+          </p>
+          <div class="d-flex justify-content-center gap-2 font-monospace small">
+            <span class="badge bg-success-subtle text-success border">&approx; 50% Matching</span>
           </div>
         </div>
       </div>
 
       <!-- Stage 4 -->
       <div class="col-md-6 col-lg-3">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4">
-            <div class="text-primary font-monospace fw-bold small mb-2">STAGE 04</div>
-            <h6 class="fw-bold mb-2">Key Rate Distillation</h6>
-            <p class="text-body-secondary small mb-0">
-              QBER is evaluated on a sacrificed sample. If $\text{QBER} < 11\%$, Devetak-Winter bounds guarantee a distilled secret key rate $R_\infty \ge 1 - 2h(\text{QBER})$.
-            </p>
+        <div class="card h-100 p-4">
+          <div class="text-primary font-monospace fw-bold small mb-2">STAGE 04</div>
+          <h6 class="fw-bold mb-2">Key Distillation</h6>
+          <p class="text-secondary small mb-3">
+            QBER is evaluated on a sacrificed sample. If $\text{QBER} < 11\%$, privacy amplification distills a secure secret key:
+          </p>
+          <div class="d-flex justify-content-center font-monospace small">
+            <span class="badge bg-primary-subtle text-primary border">R &ge; 1 - 2h(QBER)</span>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-{% endblock %}
 
+  <!-- Architecture Showcase Card -->
+  <div class="card p-4 p-md-5 mb-5 border-accent-blue">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-8">
+        <div class="d-inline-flex align-items-center gap-2 px-2.5 py-1 rounded bg-body-tertiary border text-secondary small fw-semibold mb-2">
+          <i class="bi bi-layers text-primary"></i> Clean Architecture
+        </div>
+        <h3 class="fw-bold mb-2">Decoupled 3-Layer System Topology</h3>
+        <p class="text-secondary mb-3">
+          Explore the interactive architectural diagram showing strict separation of concerns across Presentation (Flask API + SVG Engine), Quantum Domain (IBM Qiskit 2.2 Aer), and Data Persistence tiers.
+        </p>
+        <div class="d-flex gap-3 flex-wrap small text-muted">
+          <div><i class="bi bi-check-circle-fill text-success me-1"></i> Presentation: REST API + SVG</div>
+          <div><i class="bi bi-check-circle-fill text-primary me-1"></i> Domain: Qiskit Circuit &amp; Aer</div>
+          <div><i class="bi bi-check-circle-fill text-secondary me-1"></i> Data: Schema Evolution Migrations</div>
+        </div>
+      </div>
+      <div class="col-lg-4 text-lg-end">
+        <a href="{{ url_for('architecture') }}" class="btn btn-primary btn-lg px-4 py-2.5 shadow-sm fw-semibold">
+          <i class="bi bi-diagram-3-fill"></i> View System Architecture
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Real-Time Quantum Telemetry Sandbox Calculations
+function updateQuantumSandbox(pStr) {
+  const p = parseFloat(pStr);
+  const qberPct = (p * 100).toFixed(1);
+  document.getElementById('sandbox-qber-val').textContent = qberPct + '%';
+
+  // Binary entropy h(p)
+  let h = 0.0;
+  if (p > 0 && p < 1) {
+    h = -p * Math.log2(p) - (1 - p) * Math.log2(1 - p);
+  } else if (p >= 1) {
+    h = 0.0;
+  }
+  document.getElementById('sandbox-entropy').textContent = h.toFixed(3);
+
+  // Devetak-Winter bound: R = max(0, 1 - 2h(p)) with 11% cutoff
+  let r = 0.0;
+  if (p < 0.11) {
+    r = Math.max(0.0, 1.0 - 2.0 * h);
+  }
+  document.getElementById('sandbox-skr').textContent = r.toFixed(3);
+
+  const progressBar = document.getElementById('sandbox-progress-bar');
+  const badge = document.getElementById('sandbox-status-badge');
+  const skrElem = document.getElementById('sandbox-skr');
+
+  progressBar.style.width = (r * 100).toFixed(1) + '%';
+
+  if (p < 0.11 && r > 0) {
+    badge.className = 'badge bg-success-subtle text-success border border-success-subtle font-monospace';
+    badge.textContent = 'Secure Distillation';
+    progressBar.className = 'progress-bar bg-success';
+    skrElem.className = 'fw-bold fs-6 text-success';
+  } else {
+    badge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle font-monospace';
+    badge.textContent = 'Channel Compromised / Aborted';
+    progressBar.className = 'progress-bar bg-danger';
+    skrElem.className = 'fw-bold fs-6 text-danger';
+  }
+}
+</script>
+{% endblock %}
