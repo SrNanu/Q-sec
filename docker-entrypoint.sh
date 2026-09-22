@@ -17,9 +17,18 @@ python -c "from app import create_app; create_app()"
 
 # Si no se pasaron argumentos o el primer argumento es 'gunicorn', arrancar servidor WSGI
 if [ "$#" -eq 0 ] || [ "$1" = 'gunicorn' ]; then
-    echo "==> Iniciando Gunicorn en 0.0.0.0:${PORT} (workers=${WORKERS:-2}, threads=${THREADS:-4})..."
+    # Construir puertos de escucha (escuchar en $PORT y también en 3000/5000 para compatibilidad total)
+    BIND_ARGS="--bind 0.0.0.0:${PORT}"
+    if [ "${PORT}" != "3000" ]; then
+        BIND_ARGS="${BIND_ARGS} --bind 0.0.0.0:3000"
+    fi
+    if [ "${PORT}" != "5000" ]; then
+        BIND_ARGS="${BIND_ARGS} --bind 0.0.0.0:5000"
+    fi
+
+    echo "==> Iniciando Gunicorn con ${BIND_ARGS} (workers=${WORKERS:-2}, threads=${THREADS:-4})..."
     exec gunicorn \
-        --bind "0.0.0.0:${PORT}" \
+        ${BIND_ARGS} \
         --workers "${WORKERS:-2}" \
         --threads "${THREADS:-4}" \
         --worker-class gthread \
