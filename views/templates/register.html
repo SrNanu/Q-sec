@@ -1,64 +1,61 @@
 {% extends "base.html" %}
+{% from "_macros.html" import auth_side %}
 
 {% block title %}Sign Up{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 col-lg-5 mx-auto">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4 p-md-5">
-                <h2 class="card-title text-center mb-4 fw-bold">
-                    <i class="bi bi-person-plus-fill text-primary"></i> Create Account
-                </h2>
-                
-                <form method="POST" action="{{ url_for('register') }}">
-                    {{ form.hidden_tag() }}
-                    
-                    <div class="mb-3">
-                        {{ form.username.label(class="form-label fw-semibold") }}
-                        {{ form.username(class="form-control form-control-lg" + (" is-invalid" if form.username.errors else ""), placeholder="Choose a username") }}
-                        {% if form.username.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.username.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <div class="form-text">Minimum 3 characters</div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        {{ form.password.label(class="form-label fw-semibold") }}
-                        {{ form.password(class="form-control form-control-lg" + (" is-invalid" if form.password.errors else ""), placeholder="Choose a strong password") }}
-                        {% if form.password.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.password.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <div class="form-text">Minimum 6 characters</div>
-                    </div>
-                    
-                    <div class="d-grid mb-3">
-                        {{ form.submit(class="btn btn-primary btn-lg fw-bold") }}
-                    </div>
-                </form>
-                
-                <hr>
-                <div class="text-center">
-                    <p class="mb-2 text-muted">
-                        Already have an account? 
-                        <a href="{{ url_for('login') }}" class="fw-semibold">Sign in here</a>
-                    </p>
-                    <p class="mb-0 small">
-                        Or jump directly into the 
-                        <a href="{{ url_for('simulator') }}" class="text-decoration-none fw-bold">Guest Simulator &rarr;</a>
-                    </p>
-                </div>
-            </div>
+<div class="container q-container q-auth">
+  <div class="q-card q-auth-card">
+    {{ auth_side('Keep a record of every quantum key you distill.', [
+      'Every run saved with its QBER, key rate and final key',
+      'Dashboard with secure vs. aborted statistics',
+      'Free — the simulator itself never requires an account'
+    ]) }}
+
+    <div class="q-auth-form">
+      <h1>Create your account</h1>
+      <p class="q-sub mb-4">Takes ten seconds. No email required.</p>
+
+      <form method="POST" action="{{ url_for('register') }}" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+          {{ form.username.label(class="form-label") }}
+          <div class="q-input-group">
+            <i class="bi bi-person"></i>
+            {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="Choose a username", autocomplete="username", autofocus=true) }}
+          </div>
+          {% if form.username.errors %}
+            <div class="invalid-feedback d-block">{{ form.username.errors|join(' ') }}</div>
+          {% else %}
+            <div class="form-text">3–80 characters.</div>
+          {% endif %}
         </div>
+
+        <div class="mb-4">
+          {{ form.password.label(class="form-label") }}
+          <div class="q-input-group">
+            <i class="bi bi-lock"></i>
+            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="At least 6 characters", autocomplete="new-password") }}
+          </div>
+          {% if form.password.errors %}
+            <div class="invalid-feedback d-block">{{ form.password.errors|join(' ') }}</div>
+          {% else %}
+            <div class="form-text">Minimum 6 characters. Stored as a salted hash.</div>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-q btn-q-lg w-100">Create account <i class="bi bi-arrow-right kbd-arrow"></i></button>
+      </form>
+
+      <div class="q-divider">OR</div>
+
+      <a href="{{ url_for('simulator') }}" class="btn btn-q-ghost w-100 mb-4"><i class="bi bi-person-dash"></i> Try the simulator as a guest</a>
+
+      <p class="small text-center mb-0" style="color: var(--q-muted);">
+        Already have an account? <a href="{{ url_for('login') }}" class="fw-medium">Sign in</a>
+      </p>
     </div>
+  </div>
 </div>
 {% endblock %}
-

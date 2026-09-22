@@ -1,279 +1,442 @@
 {% extends "base.html" %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Overview{% endblock %}
 
 {% block content %}
-<div class="py-2">
-  <!-- Hero Section -->
-  <div class="row align-items-center mb-5 pt-3">
-    <div class="col-lg-10 mx-auto text-center">
-      <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill border bg-body-secondary text-secondary small fw-medium mb-3">
-        <span class="badge bg-primary rounded-pill px-2 py-1">CoNaIISI 2026</span>
-        <span>UTN FRRo &bull; Quantum Information & Cryptography Research</span>
-      </div>
-      
-      <h1 class="display-5 fw-bold tracking-tight mb-3">
-        BB84 Quantum Key Distribution Simulator
-      </h1>
-      
-      <p class="lead text-body-secondary mb-4 mx-auto" style="max-width: 780px;">
-        High-fidelity physical modeling of single-photon state preparation, eavesdropper interception analysis, 
-        and Devetak-Winter secret key rate distillation powered by IBM Qiskit 2.2 Aer.
-      </p>
-
-      <div class="d-flex justify-content-center gap-2 flex-wrap mb-4">
-        <a href="{{ url_for('simulator') }}" class="btn btn-primary btn-lg px-4 py-2.5 shadow-sm fw-semibold">
-          <i class="bi bi-cpu me-1"></i> Launch Simulator
+<!-- ============================ HERO ============================ -->
+<section class="q-hero">
+  <div class="container q-container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <a href="{{ url_for('architecture') }}" class="q-hero-badge mb-4">
+          <b>CoNaIISI 2026</b>
+          Peer-reviewed · UTN FRRo
+          <i class="bi bi-arrow-right-short"></i>
         </a>
-        <a href="{{ url_for('architecture') }}" class="btn btn-outline-secondary btn-lg px-4 py-2.5 fw-semibold">
-          <i class="bi bi-diagram-3 me-1"></i> System Architecture
-        </a>
-        <a href="{{ url_for('animation') }}" class="btn btn-outline-secondary btn-lg px-3 py-2.5 fw-semibold">
-          <i class="bi bi-lightning-charge me-1"></i> Protocol Visualizer
-        </a>
-      </div>
-    </div>
-  </div>
 
-  <!-- Key Technical Specifications Bar -->
-  <div class="row g-3 mb-5">
-    <div class="col-6 col-md-3">
-      <div class="card h-100 border bg-body-tertiary">
-        <div class="card-body p-3 text-center">
-          <div class="text-body-secondary small text-uppercase fw-semibold mb-1">State Preparation</div>
-          <div class="h4 fw-bold mb-0 text-primary">10 &ndash; 1,000</div>
-          <div class="small text-body-secondary">Single Qubits / Run</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="card h-100 border bg-body-tertiary">
-        <div class="card-body p-3 text-center">
-          <div class="text-body-secondary small text-uppercase fw-semibold mb-1">Noise Engine</div>
-          <div class="h4 fw-bold mb-0 text-success">Qiskit Aer</div>
-          <div class="small text-body-secondary">Depolarizing Channel</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="card h-100 border bg-body-tertiary">
-        <div class="card-body p-3 text-center">
-          <div class="text-body-secondary small text-uppercase fw-semibold mb-1">Security Threshold</div>
-          <div class="h4 fw-bold mb-0 text-warning">11.0%</div>
-          <div class="small text-body-secondary">Shor-Preskill QBER Cutoff</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="card h-100 border bg-body-tertiary">
-        <div class="card-body p-3 text-center">
-          <div class="text-body-secondary small text-uppercase fw-semibold mb-1">Access Model</div>
-          <div class="h4 fw-bold mb-0 text-info">Zero-Barrier</div>
-          <div class="small text-body-secondary">Guest Mode &amp; REST API</div>
-        </div>
-      </div>
-    </div>
-  </div>
+        <h1 class="q-display mb-4">
+          Quantum key distribution,<br>
+          <span class="q-grad">observable qubit by qubit.</span>
+        </h1>
 
-  <!-- Benchmark Presets Section -->
-  <div class="mb-5">
-    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-      <div>
-        <h4 class="fw-bold mb-1">Empirical Benchmark Presets</h4>
-        <p class="text-body-secondary small mb-0">Pre-calibrated experimental configurations to observe key distribution boundaries.</p>
-      </div>
-      <a href="{{ url_for('simulator') }}" class="small text-decoration-none fw-semibold">
-        Custom Parameterization <i class="bi bi-arrow-right"></i>
-      </a>
-    </div>
+        <p class="q-lead mb-4" style="max-width: 540px;">
+          Q-Sec simulates the BB84 protocol on IBM Qiskit Aer — single-photon state preparation,
+          depolarizing channel noise and intercept-resend attacks — and measures exactly when a key
+          stops being secret.
+        </p>
 
-    <div class="row g-3">
-      <!-- Preset 1: Ideal Channel -->
-      <div class="col-lg-4">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4 d-flex flex-column justify-content-between">
-            <div>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Baseline</span>
-                <span class="small font-monospace text-body-secondary">N = 20 &bull; &epsilon; = 0.0</span>
-              </div>
-              <h5 class="fw-bold mb-2">Ideal Channel</h5>
-              <p class="text-body-secondary small mb-3">
-                Noiseless transmission with no eavesdropper. Basis reconciliation yields matching key without bit errors.
-              </p>
-              <div class="p-2.5 rounded bg-body-secondary border font-monospace small mb-3">
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Expected QBER:</span>
-                  <span class="fw-bold text-success">&approx; 0.0%</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Secret Key Rate (R):</span>
-                  <span class="fw-bold text-success">&approx; 1.0</span>
-                </div>
-              </div>
-            </div>
-            <a href="{{ url_for('animation', key_length=20, has_eve=0, noise_rate=0.0) }}" class="btn btn-outline-success w-100 fw-semibold">
-              <i class="bi bi-play-fill"></i> Run Baseline
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Preset 2: Eavesdropping Attack -->
-      <div class="col-lg-4">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4 d-flex flex-column justify-content-between">
-            <div>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Active Threat</span>
-                <span class="small font-monospace text-body-secondary">Eve = Active</span>
-              </div>
-              <h5 class="fw-bold mb-2">Intercept-Resend Attack</h5>
-              <p class="text-body-secondary small mb-3">
-                Eve measures qubits in random bases, inducing wave-function collapse and detectable error rates.
-              </p>
-              <div class="p-2.5 rounded bg-body-secondary border font-monospace small mb-3">
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Expected QBER:</span>
-                  <span class="fw-bold text-danger">&approx; 25.0%</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Protocol Outcome:</span>
-                  <span class="fw-bold text-danger">ABORT (QBER &gt; 11%)</span>
-                </div>
-              </div>
-            </div>
-            <a href="{{ url_for('animation', key_length=20, has_eve=1, noise_rate=0.0) }}" class="btn btn-outline-danger w-100 fw-semibold">
-              <i class="bi bi-shield-exclamation"></i> Simulate Attack
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Preset 3: Depolarizing Noise -->
-      <div class="col-lg-4">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4 d-flex flex-column justify-content-between">
-            <div>
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">Environmental Noise</span>
-                <span class="small font-monospace text-body-secondary">&epsilon; = 0.15</span>
-              </div>
-              <h5 class="fw-bold mb-2">Depolarizing Channel</h5>
-              <p class="text-body-secondary small mb-3">
-                Simulates optical fiber attenuation and decoherence through Qiskit depolarizing noise channels.
-              </p>
-              <div class="p-2.5 rounded bg-body-secondary border font-monospace small mb-3">
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Noise Rate (&epsilon;):</span>
-                  <span class="fw-bold text-warning-emphasis">15.0%</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span class="text-body-secondary">Threshold Status:</span>
-                  <span class="fw-bold text-warning-emphasis">Exceeds 11% Limit</span>
-                </div>
-              </div>
-            </div>
-            <a href="{{ url_for('animation', key_length=20, has_eve=0, noise_rate=0.15) }}" class="btn btn-outline-warning w-100 fw-semibold">
-              <i class="bi bi-soundwave"></i> Calibrate Noise
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Interactive System Architecture Banner -->
-  <div class="card border bg-body-tertiary mb-5">
-    <div class="card-body p-4 p-md-5">
-      <div class="row align-items-center g-4">
-        <div class="col-lg-8">
-          <div class="d-inline-flex align-items-center gap-2 px-2.5 py-1 rounded bg-primary-subtle text-primary small fw-semibold mb-2">
-            <i class="bi bi-diagram-3"></i> System Topology
-          </div>
-          <h3 class="fw-bold mb-2">Interactive 3-Layer System Architecture</h3>
-          <p class="text-body-secondary mb-3">
-            Q-Sec separates presentation (Flask guest/auth endpoints), quantum domain operations (IBM Qiskit 2.2 Aer simulation), 
-            and data persistence (idempotent schema migrations) into cleanly decoupled tiers.
-          </p>
-          <div class="d-flex gap-3 flex-wrap small text-body-secondary">
-            <div><i class="bi bi-check2 text-primary me-1"></i><strong>Presentation:</strong> REST API + Photon SVG Engine</div>
-            <div><i class="bi bi-check2 text-primary me-1"></i><strong>Quantum Domain:</strong> Aer Simulator + Noise Models</div>
-            <div><i class="bi bi-check2 text-primary me-1"></i><strong>Data Tier:</strong> Dynamic Column Evolution</div>
-          </div>
-        </div>
-        <div class="col-lg-4 text-lg-end">
-          <a href="{{ url_for('architecture') }}" class="btn btn-primary btn-lg px-4 py-2.5 shadow-sm fw-semibold text-nowrap">
-            <i class="bi bi-diagram-3-fill me-1"></i> View Interactive Diagram
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <a href="{{ url_for('simulator') }}" class="btn btn-q btn-q-lg">
+            Launch simulator <i class="bi bi-arrow-right kbd-arrow"></i>
+          </a>
+          <a href="{{ url_for('animation', key_length=128, has_eve=1, noise_rate=0.0) }}" class="btn btn-q-ghost btn-q-lg">
+            <i class="bi bi-incognito"></i> Watch an attack
           </a>
         </div>
+
+        <div class="q-trust">
+          <span><i class="bi bi-person-check"></i> No account required</span>
+          <span><i class="bi bi-cpu"></i> Qiskit 2.2 · Aer 0.17</span>
+          <span><i class="bi bi-check2-circle"></i> Test-covered quantum core</span>
+        </div>
+      </div>
+
+      <!-- Live instrument -->
+      <div class="col-lg-6">
+        <div class="q-card q-instrument q-glow-frame" aria-label="Animated BB84 transmission">
+          <div class="q-card-hd">
+            <p class="q-card-title"><i class="bi bi-broadcast"></i> quantum channel</p>
+            <span class="q-live">LIVE</span>
+          </div>
+          <svg id="hero-channel" viewBox="0 0 560 190" role="img" aria-label="Photons travelling from Alice to Bob">
+            <defs>
+              <linearGradient id="fiberGrad" x1="0" x2="1">
+                <stop offset="0" stop-color="var(--q-alice)" stop-opacity=".9"/>
+                <stop offset="1" stop-color="var(--q-bob)" stop-opacity=".9"/>
+              </linearGradient>
+              <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3.5"/>
+              </filter>
+            </defs>
+            <line x1="92" y1="92" x2="468" y2="92" stroke="var(--q-border-strong)" stroke-width="2"/>
+            <line x1="92" y1="92" x2="468" y2="92" stroke="url(#fiberGrad)" stroke-width="2" stroke-dasharray="2 10" opacity=".55">
+              <animate attributeName="stroke-dashoffset" from="0" to="-24" dur="1.1s" repeatCount="indefinite"/>
+            </line>
+
+            <!-- Alice -->
+            <g transform="translate(62 92)">
+              <circle r="30" fill="var(--q-alice)" opacity=".12"/>
+              <circle r="22" fill="var(--q-surface)" stroke="var(--q-alice)" stroke-width="1.5"/>
+              <path d="M-7 -4 h14 M0 -11 v14" stroke="var(--q-alice)" stroke-width="1.8" stroke-linecap="round" transform="translate(0 4)"/>
+            </g>
+            <text class="q-station-name" x="62" y="146" text-anchor="middle">Alice</text>
+            <text class="q-station-label" x="62" y="162" text-anchor="middle">PREPARE</text>
+
+            <!-- Bob -->
+            <g transform="translate(498 92)">
+              <circle r="30" fill="var(--q-bob)" opacity=".12"/>
+              <circle r="22" fill="var(--q-surface)" stroke="var(--q-bob)" stroke-width="1.5"/>
+              <path d="M-8 5 a8 8 0 0 1 16 0" fill="none" stroke="var(--q-bob)" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="0" y1="5" x2="5" y2="-4" stroke="var(--q-bob)" stroke-width="1.8" stroke-linecap="round"/>
+            </g>
+            <text class="q-station-name" x="498" y="146" text-anchor="middle">Bob</text>
+            <text class="q-station-label" x="498" y="162" text-anchor="middle">MEASURE</text>
+
+            <text class="q-station-label" x="280" y="40" text-anchor="middle">SINGLE-PHOTON POLARIZATION STATES</text>
+            <g id="hero-photons"></g>
+          </svg>
+
+          <div class="q-mini-ledger" id="hero-ledger" aria-hidden="true"></div>
+        </div>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- Technical Protocol Pipeline Section -->
-  <div class="mb-5">
-    <div class="text-center mb-4">
-      <h3 class="fw-bold mb-1">BB84 Quantum Key Distribution Protocol Pipeline</h3>
-      <p class="text-body-secondary small mx-auto" style="max-width: 650px;">
-        Information-theoretic security established by the Heisenberg Uncertainty Principle and the Quantum No-Cloning Theorem.
-      </p>
+<!-- ============================ SPECS ============================ -->
+<section class="pb-2">
+  <div class="container q-container">
+    <div class="q-specs q-reveal">
+      <div class="q-spec">
+        <div class="q-spec-k">Qubits / run</div>
+        <div class="q-spec-v">10 – 1,000</div>
+        <div class="q-spec-d">Prepared &amp; measured on Aer</div>
+      </div>
+      <div class="q-spec">
+        <div class="q-spec-k">Channel model</div>
+        <div class="q-spec-v">Depolarizing</div>
+        <div class="q-spec-d">qiskit_aer.noise, ε ∈ [0, 1]</div>
+      </div>
+      <div class="q-spec">
+        <div class="q-spec-k">Abort threshold</div>
+        <div class="q-spec-v" style="color: var(--q-eve);">11.0%</div>
+        <div class="q-spec-d">Shor–Preskill QBER bound</div>
+      </div>
+      <div class="q-spec">
+        <div class="q-spec-k">Attack model</div>
+        <div class="q-spec-v">Intercept–resend</div>
+        <div class="q-spec-d">E[QBER] = 25% on ideal fiber</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PIPELINE ============================ -->
+<section class="q-section">
+  <div class="container q-container">
+    <div class="q-section-head q-reveal">
+      <span class="q-eyebrow"><span class="dot"></span>Protocol</span>
+      <h2 class="q-h2 mt-2 mb-2">Four stages from random bits to a provably secret key.</h2>
+      <p class="q-sub mb-0">Security rests on physics, not on computational hardness: measuring an unknown quantum state disturbs it, and that disturbance is measurable.</p>
+    </div>
+
+    <div class="q-pipeline">
+      <article class="q-card q-card-hover q-pipe-step q-reveal">
+        <div class="q-pipe-num"><span class="ico"><i class="bi bi-dice-5"></i></span>01 · ALICE</div>
+        <h3>State preparation</h3>
+        <p>Random bits $b_i$ are encoded in a random basis — rectilinear $\{|0\rangle,|1\rangle\}$ or diagonal $\{|+\rangle,|-\rangle\}$.</p>
+      </article>
+      <article class="q-card q-card-hover q-pipe-step q-reveal">
+        <div class="q-pipe-num"><span class="ico"><i class="bi bi-activity"></i></span>02 · CHANNEL</div>
+        <h3>Quantum transmission</h3>
+        <p>Photons cross a depolarizing channel $\mathcal{E}_\varepsilon(\rho)$ where an adversary may intercept and resend them.</p>
+      </article>
+      <article class="q-card q-card-hover q-pipe-step q-reveal">
+        <div class="q-pipe-num"><span class="ico"><i class="bi bi-funnel"></i></span>03 · BOB</div>
+        <h3>Measurement &amp; sifting</h3>
+        <p>Bob measures in his own random bases. Over a public channel both keep only positions where the bases agree (~50%).</p>
+      </article>
+      <article class="q-card q-card-hover q-pipe-step q-reveal">
+        <div class="q-pipe-num"><span class="ico"><i class="bi bi-key"></i></span>04 · DISTILL</div>
+        <h3>Key-rate estimation</h3>
+        <p>A sacrificed sample estimates the QBER. Below 11%, a secret key survives at rate $R \ge 1 - 2h(\text{QBER})$.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SECURITY BOUND ============================ -->
+<section class="q-section pt-0">
+  <div class="container q-container">
+    <div class="q-card q-reveal">
+      <div class="row g-0">
+        <div class="col-lg-5 q-card-pad p-4 p-lg-5" style="border-right: 1px solid var(--q-border);">
+          <span class="q-eyebrow"><span class="dot" style="background: var(--q-eve); box-shadow: 0 0 0 3px var(--q-eve-soft);"></span>Security bound</span>
+          <h2 class="q-h2 mt-2 mb-3">Where secrecy ends.</h2>
+          <p class="q-sub">Every error Bob sees could have leaked to Eve. Error correction plus privacy amplification can remove that leakage — but only while the error rate stays under the Shor–Preskill threshold.</p>
+
+          <div class="q-math mb-3">
+            <div class="q-math-label">Asymptotic secret key rate</div>
+            $$R = \max\bigl(0,\; 1 - 2\,h(Q)\bigr)$$
+          </div>
+          <div class="q-math mb-4">
+            <div class="q-math-label">Binary Shannon entropy</div>
+            $$h(p) = -p\log_2 p - (1-p)\log_2(1-p)$$
+          </div>
+
+          <label for="q-try" class="q-label d-flex justify-content-between">
+            <span>Try a QBER</span>
+            <span class="q-mono" id="q-try-val" style="color: var(--q-text);">5.0%</span>
+          </label>
+          <input type="range" class="q-range" id="q-try" min="0" max="0.3" step="0.005" value="0.05">
+          <div class="q-range-ticks"><span>0%</span><span>10%</span><span>20%</span><span>30%</span></div>
+          <div id="q-try-verdict" class="q-verdict ok mt-3"><i class="bi bi-shield-check"></i><span></span></div>
+        </div>
+        <div class="col-lg-7 p-4 p-lg-5 d-flex align-items-center">
+          <svg id="home-chart" class="w-100" role="img" aria-label="Secret key rate as a function of QBER"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ EXPERIMENTS ============================ -->
+<section class="q-section pt-0" id="experiments">
+  <div class="container q-container">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+      <div class="q-section-head mb-0 q-reveal">
+        <span class="q-eyebrow"><span class="dot"></span>Experiments</span>
+        <h2 class="q-h2 mt-2 mb-2">Three scenarios, one click each.</h2>
+        <p class="q-sub mb-0">Calibrated configurations that land on each side of the security threshold.</p>
+      </div>
+      <a href="{{ url_for('simulator') }}" class="btn btn-q-ghost btn-q-sm">Custom parameters <i class="bi bi-sliders"></i></a>
     </div>
 
     <div class="row g-3">
-      <!-- Stage 1 -->
-      <div class="col-md-6 col-lg-3">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4">
-            <div class="text-primary font-monospace fw-bold small mb-2">STAGE 01</div>
-            <h6 class="fw-bold mb-2">State Preparation</h6>
-            <p class="text-body-secondary small mb-0">
-              Alice generates classical bits $b_i \in \{0, 1\}$ and randomly encodes each into rectilinear ($+$) or diagonal ($\times$) single-photon states.
-            </p>
+      {% set experiments = [
+        {'tag': 'Baseline', 'cls': 'q-chip-ok', 'icon': 'bi-check2-circle', 'title': 'Ideal channel',
+         'desc': 'Noiseless fiber, no adversary. Bob recovers Alice’s sifted bits exactly.',
+         'n': 128, 'eve': 0, 'eps': 0.0, 'q': 0.0, 'cta': 'Run baseline'},
+        {'tag': 'Active threat', 'cls': 'q-chip-eve', 'icon': 'bi-incognito', 'title': 'Intercept–resend attack',
+         'desc': 'Eve measures every photon in a random basis and resends it, disturbing half of them.',
+         'n': 128, 'eve': 1, 'eps': 0.0, 'q': 0.25, 'cta': 'Simulate attack'},
+        {'tag': 'Decoherence', 'cls': 'q-chip-warn', 'icon': 'bi-soundwave', 'title': 'Noisy channel',
+         'desc': 'Strong depolarizing noise, no adversary. Indistinguishable from an attack — so it aborts too.',
+         'n': 128, 'eve': 0, 'eps': 0.40, 'q': 0.20, 'cta': 'Inject noise'}
+      ] %}
+      {% for e in experiments %}
+      <div class="col-lg-4">
+        <article class="q-card q-card-hover q-exp q-reveal">
+          <div class="q-exp-top">
+            <span class="q-chip {{ e.cls }}"><i class="bi {{ e.icon }}"></i> {{ e.tag }}</span>
+            <span class="q-mono small" style="color: var(--q-faint);">0{{ loop.index }}</span>
           </div>
-        </div>
-      </div>
-
-      <!-- Stage 2 -->
-      <div class="col-md-6 col-lg-3">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4">
-            <div class="text-primary font-monospace fw-bold small mb-2">STAGE 02</div>
-            <h6 class="fw-bold mb-2">Quantum Channel</h6>
-            <p class="text-body-secondary small mb-0">
-              Photons traverse an optical fiber or free-space channel modeled via depolarizing noise $\mathcal{E}(\rho)$, vulnerable to eavesdropper intercept.
-            </p>
+          <h3>{{ e.title }}</h3>
+          <p>{{ e.desc }}</p>
+          <div class="q-exp-params">
+            <div><small>Qubits</small><strong>{{ e.n }}</strong></div>
+            <div><small>Eve</small><strong>{{ 'on' if e.eve else 'off' }}</strong></div>
+            <div><small>Noise <span style="text-transform:none">ε</span></small><strong>{{ '%.2f'|format(e.eps) }}</strong></div>
           </div>
-        </div>
-      </div>
-
-      <!-- Stage 3 -->
-      <div class="col-md-6 col-lg-3">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4">
-            <div class="text-primary font-monospace fw-bold small mb-2">STAGE 03</div>
-            <h6 class="fw-bold mb-2">Projective Measurement</h6>
-            <p class="text-body-secondary small mb-0">
-              Bob independently selects random bases to measure incoming qubits. Sifting discards discordant bases over an authenticated classical channel.
-            </p>
+          <div class="q-meter mb-4" data-qber="{{ e.q }}">
+            <div class="q-meter-head"><span>Expected QBER</span><strong>{{ '%.0f'|format(e.q * 100) }}%</strong></div>
+            <div class="q-meter-track">
+              <div class="q-meter-fill"></div>
+              <div class="q-meter-threshold" data-label="11%"></div>
+            </div>
           </div>
-        </div>
+          <a href="{{ url_for('animation', key_length=e.n, has_eve=e.eve, noise_rate=e.eps) }}" class="btn btn-q-ghost w-100 mt-2">
+            <i class="bi bi-play-fill"></i> {{ e.cta }}
+          </a>
+        </article>
       </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
 
-      <!-- Stage 4 -->
-      <div class="col-md-6 col-lg-3">
-        <div class="card h-100 border bg-body-tertiary">
-          <div class="card-body p-4">
-            <div class="text-primary font-monospace fw-bold small mb-2">STAGE 04</div>
-            <h6 class="fw-bold mb-2">Key Rate Distillation</h6>
-            <p class="text-body-secondary small mb-0">
-              QBER is evaluated on a sacrificed sample. If $\text{QBER} < 11\%$, Devetak-Winter bounds guarantee a distilled secret key rate $R_\infty \ge 1 - 2h(\text{QBER})$.
-            </p>
+<!-- ============================ ARCHITECTURE ============================ -->
+<section class="q-section pt-0">
+  <div class="container q-container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-5 q-reveal">
+        <span class="q-eyebrow"><span class="dot" style="background: var(--q-bob); box-shadow: 0 0 0 3px var(--q-bob-soft);"></span>Engineering</span>
+        <h2 class="q-h2 mt-2 mb-3">A clean three-layer system behind the physics.</h2>
+        <p class="q-sub mb-4">Presentation, quantum domain and persistence are strictly decoupled: the views never touch the database, and the simulation core is framework-agnostic and fully unit-tested.</p>
+        <a href="{{ url_for('architecture') }}" class="btn btn-q">Explore the architecture <i class="bi bi-arrow-right kbd-arrow"></i></a>
+      </div>
+      <div class="col-lg-7 q-reveal">
+        <div class="q-card p-3">
+          <div class="q-layers">
+            <div class="q-layer">
+              <span class="ico" style="color: var(--q-alice);"><i class="bi bi-window"></i></span>
+              <div><strong>Presentation</strong><small>Flask routes, guest mode, REST API, SVG photon engine</small></div>
+              <code>views/</code>
+            </div>
+            <div class="q-layer">
+              <span class="ico" style="color: var(--q-bob);"><i class="bi bi-cpu"></i></span>
+              <div><strong>Quantum domain</strong><small>Qiskit circuits, Aer noise models, QBER &amp; key-rate estimation</small></div>
+              <code>business/</code>
+            </div>
+            <div class="q-layer">
+              <span class="ico" style="color: var(--q-ok);"><i class="bi bi-database"></i></span>
+              <div><strong>Data</strong><small>Repository pattern, SQLite / PostgreSQL, idempotent schema evolution</small></div>
+              <code>datos/</code>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>
+
+<!-- ============================ CTA ============================ -->
+<section class="pb-2">
+  <div class="container q-container">
+    <div class="q-cta text-center q-reveal">
+      <h2 class="q-h2 mb-2">Run your first key exchange.</h2>
+      <p class="q-sub mx-auto mb-4" style="max-width: 520px;">No sign-up needed. Create an account only if you want your experiments saved to a personal history.</p>
+      <div class="d-flex justify-content-center flex-wrap gap-2">
+        <a href="{{ url_for('simulator') }}" class="btn btn-q btn-q-lg">Open the simulator <i class="bi bi-arrow-right kbd-arrow"></i></a>
+        {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('register') }}" class="btn btn-q-ghost btn-q-lg">Create free account</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- Security bound chart + QBER explorer ---------- */
+  const chart = QSec.keyRateChart(document.getElementById('home-chart'), { height: 300 });
+  const tryInput = document.getElementById('q-try');
+  const tryVal = document.getElementById('q-try-val');
+  const verdict = document.getElementById('q-try-verdict');
+
+  function updateTry() {
+    const q = parseFloat(tryInput.value);
+    const r = QSec.keyRate(q);
+    tryVal.textContent = (q * 100).toFixed(1) + '%';
+    tryInput.style.setProperty('--fill', (q / 0.3 * 100) + '%');
+    chart.setPoint(q);
+    const secure = q < QSec.THRESHOLD;
+    verdict.className = 'q-verdict mt-3 ' + (secure ? (q > 0.08 ? 'warn' : 'ok') : 'bad');
+    verdict.querySelector('i').className = secure ? 'bi bi-shield-check' : 'bi bi-shield-x';
+    verdict.querySelector('span').textContent = secure
+      ? 'Secure — ' + (r * 100).toFixed(1) + '% of sifted bits become secret key.'
+      : 'Abort — no secret key can be distilled.';
+  }
+  tryInput.addEventListener('input', updateTry);
+  setTimeout(updateTry, 300);
+
+  /* ---------- Experiment meters ---------- */
+  const SCALE = 0.30;
+  document.querySelectorAll('.q-meter').forEach(function (m) {
+    const q = parseFloat(m.dataset.qber);
+    const fill = m.querySelector('.q-meter-fill');
+    m.querySelector('.q-meter-threshold').style.left = (QSec.THRESHOLD / SCALE * 100) + '%';
+    fill.classList.toggle('is-bad', q >= QSec.THRESHOLD);
+    setTimeout(function () { fill.style.width = Math.max(q / SCALE * 100, 1.5) + '%'; }, 400);
+  });
+
+  /* ---------- Hero: live BB84 channel (deterministic PRNG, decorative) ---------- */
+  let seed = 84;
+  function rnd() { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; }
+  function bit() { return rnd() < 0.5 ? 0 : 1; }
+
+  const photonLayer = document.getElementById('hero-photons');
+  const ledger = document.getElementById('hero-ledger');
+  const COLS = 12;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const rows = [
+    { key: 'ab', label: 'ALICE BIT', cls: 'a' },
+    { key: 'aB', label: 'A · BASIS', cls: 'a' },
+    { key: 'bB', label: 'B · BASIS', cls: 'b' },
+    { key: 'sift', label: 'SIFTED', cls: '' }
+  ];
+  const cells = {};
+  rows.forEach(function (r) {
+    const l = document.createElement('div');
+    l.className = 'lbl';
+    l.textContent = r.label;
+    ledger.appendChild(l);
+    cells[r.key] = [];
+    for (let i = 0; i < COLS; i++) {
+      const c = document.createElement('div');
+      c.className = 'cell';
+      c.textContent = '·';
+      ledger.appendChild(c);
+      cells[r.key].push(c);
+    }
+  });
+
+  function resetLedger() {
+    Object.keys(cells).forEach(function (k) {
+      cells[k].forEach(function (c) { c.className = 'cell'; c.textContent = '·'; });
+    });
+  }
+
+  function makePhoton(b, basis) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const g = document.createElementNS(ns, 'g');
+    const angle = QSec.polAngle(b, basis);
+    g.innerHTML =
+      '<circle r="11" fill="var(--q-alice)" opacity=".35" filter="url(#softGlow)"></circle>' +
+      '<circle r="8" fill="var(--q-surface)" stroke="var(--q-alice)" stroke-width="1.4"></circle>' +
+      '<line x1="-5" y1="0" x2="5" y2="0" stroke="var(--q-text)" stroke-width="1.6" stroke-linecap="round" transform="rotate(' + (-angle) + ')"></line>';
+    photonLayer.appendChild(g);
+    return g;
+  }
+
+  function fly(g, done) {
+    const x0 = 104, x1 = 456, dur = 1500, t0 = performance.now();
+    function frame(now) {
+      const t = Math.min((now - t0) / dur, 1);
+      const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      g.setAttribute('transform', 'translate(' + (x0 + (x1 - x0) * e) + ' 92)');
+      g.style.opacity = t < 0.08 ? String(t / 0.08) : (t > 0.92 ? String((1 - t) / 0.08) : '1');
+      if (t < 1) requestAnimationFrame(frame); else { g.remove(); done(); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function setCell(key, i, text, extra) {
+    const c = cells[key][i];
+    c.textContent = text;
+    c.className = 'cell new ' + (extra || '');
+  }
+
+  let col = 0, round = [];
+  function launch() {
+    if (col >= COLS) { return sift(); }
+    const i = col++;
+    const q = { b: bit(), aB: bit(), bB: bit() };
+    round.push(q);
+    setCell('ab', i, q.b, 'a');
+    setCell('aB', i, QSec.basisSymbol(q.aB), 'a');
+    const g = makePhoton(q.b, q.aB);
+    fly(g, function () { setCell('bB', i, QSec.basisSymbol(q.bB), 'b'); });
+    setTimeout(launch, 420);
+  }
+
+  function sift() {
+    setTimeout(function () {
+      round.forEach(function (q, i) {
+        const keep = q.aB === q.bB;
+        setCell('sift', i, keep ? q.b : '–', keep ? 'keep' : 'drop');
+        if (!keep) { ['ab', 'aB', 'bB'].forEach(function (k) { cells[k][i].classList.add('drop'); }); }
+      });
+      setTimeout(function () { resetLedger(); col = 0; round = []; launch(); }, 2600);
+    }, 1400);
+  }
+
+  if (reduceMotion) {
+    for (let i = 0; i < COLS; i++) {
+      const q = { b: bit(), aB: bit(), bB: bit() };
+      round.push(q);
+      setCell('ab', i, q.b, 'a'); setCell('aB', i, QSec.basisSymbol(q.aB), 'a'); setCell('bB', i, QSec.basisSymbol(q.bB), 'b');
+    }
+    col = COLS;
+    round.forEach(function (q, i) { const keep = q.aB === q.bB; setCell('sift', i, keep ? q.b : '–', keep ? 'keep' : 'drop'); });
+  } else {
+    launch();
+  }
+})();
+</script>
+{% endblock %}

@@ -1,123 +1,52 @@
 {% extends "base.html" %}
+{% from "_macros.html" import session_table, empty_state %}
 
 {% block title %}Simulation History{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h2 class="mb-4 fw-bold">
-            <i class="bi bi-clock-history text-primary"></i> Simulation History
-        </h2>
-        
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                {% if sessions %}
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Session ID</th>
-                                    <th>Timestamp (UTC)</th>
-                                    <th>Qubits</th>
-                                    <th>Eve</th>
-                                    <th>Noise</th>
-                                    <th>Result</th>
-                                    <th>QBER</th>
-                                    <th>Secret Key Rate</th>
-                                    <th>Final Key (Preview)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for session in sessions %}
-                                <tr>
-                                    <td><strong>#{{ session.id }}</strong></td>
-                                    <td class="small text-muted">{{ session.timestamp }}</td>
-                                    <td>{{ session.key_length }} qubits</td>
-                                    <td>
-                                        {% if session.has_eve %}
-                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
-                                                <i class="bi bi-eye-fill"></i> Active
-                                            </span>
-                                        {% else %}
-                                            <span class="badge bg-secondary-subtle text-secondary border">
-                                                <i class="bi bi-eye-slash"></i> None
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if session.noise_rate %}
-                                            {{ "%.1f"|format(session.noise_rate * 100) }}%
-                                        {% else %}
-                                            0.0%
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if session.result == 'secure' %}
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-shield-check"></i> Secure
-                                            </span>
-                                        {% else %}
-                                            <span class="badge bg-danger">
-                                                <i class="bi bi-shield-x"></i> Compromised
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if session.error_rate is not none %}
-                                            <span class="{% if session.error_rate >= 0.11 %}text-danger fw-bold{% else %}text-success fw-semibold{% endif %}">
-                                                {{ "%.2f"|format(session.error_rate * 100) }}%
-                                            </span>
-                                        {% else %}
-                                            <span class="text-muted">N/A</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if session.secret_key_rate is not none %}
-                                            <span class="badge bg-primary-subtle text-primary border">
-                                                R = {{ "%.3f"|format(session.secret_key_rate) }}
-                                            </span>
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if session.final_key %}
-                                            <code class="small text-success">{{ session.final_key[:24] }}{% if session.final_key|length > 24 %}...{% endif %}</code>
-                                        {% else %}
-                                            <span class="text-muted small"><em>None (aborted)</em></span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="mt-3">
-                        <p class="text-muted small mb-0">
-                            <i class="bi bi-info-circle me-1"></i> 
-                            Showing the most recent {{ sessions|length }} simulations
-                        </p>
-                    </div>
-                {% else %}
-                    <div class="alert alert-info mb-0">
-                        <i class="bi bi-info-circle me-1"></i> 
-                        You have not recorded any simulation sessions yet. 
-                        <a href="{{ url_for('simulator') }}" class="alert-link">Execute your first simulation now!</a>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-        
-        <div class="mt-3 d-flex gap-2">
-            <a href="{{ url_for('simulator') }}" class="btn btn-primary">
-                <i class="bi bi-play-circle me-1"></i> New Simulation
-            </a>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-speedometer2 me-1"></i> Return to Dashboard
-            </a>
-        </div>
+<div class="container q-container">
+  <div class="q-page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div>
+      <span class="q-eyebrow"><span class="dot"></span>History</span>
+      <h1>Simulation history</h1>
+      <p class="q-sub mb-0">Every key exchange you've run, with its channel parameters and security outcome.</p>
     </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('dashboard') }}" class="btn btn-q-ghost"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+      <a href="{{ url_for('simulator') }}" class="btn btn-q"><i class="bi bi-plus-lg"></i> New simulation</a>
+    </div>
+  </div>
+
+  <div class="q-card" style="overflow: hidden;">
+    <div class="q-card-hd flex-wrap">
+      <div class="q-filter" role="tablist" aria-label="Filter by result">
+        <button type="button" class="is-active" data-filter="all">All <span class="q-mono" style="opacity:.6;">{{ sessions|length }}</span></button>
+        <button type="button" data-filter="secure">Secure <span class="q-mono" style="opacity:.6;">{{ sessions|selectattr('result', 'equalto', 'secure')|list|length }}</span></button>
+        <button type="button" data-filter="compromised">Aborted <span class="q-mono" style="opacity:.6;">{{ sessions|rejectattr('result', 'equalto', 'secure')|list|length }}</span></button>
+      </div>
+      <span class="small" style="color: var(--q-muted);">Showing the {{ sessions|length }} most recent runs</span>
+    </div>
+    {% if sessions %}
+      {{ session_table(sessions, show_key=True) }}
+    {% else %}
+      {{ empty_state('No simulations recorded', 'Your experiment log is empty. Run a key exchange to start building it.') }}
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+document.querySelectorAll('.q-filter button').forEach(function (b) {
+  b.addEventListener('click', function () {
+    document.querySelectorAll('.q-filter button').forEach(function (x) { x.classList.remove('is-active'); });
+    b.classList.add('is-active');
+    const f = b.dataset.filter;
+    document.querySelectorAll('tr[data-result]').forEach(function (tr) {
+      const r = tr.dataset.result === 'secure' ? 'secure' : 'compromised';
+      tr.style.display = (f === 'all' || f === r) ? '' : 'none';
+    });
+  });
+});
+</script>
+{% endblock %}

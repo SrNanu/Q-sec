@@ -1,190 +1,278 @@
 {% extends "base.html" %}
 
-{% block title %}Quantum Simulator{% endblock %}
+{% block title %}Simulator{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-9 mx-auto">
-        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-            <div>
-                <h2 class="mb-1 fw-bold">
-                    <i class="bi bi-cpu text-primary"></i> BB84 Protocol Simulator
-                </h2>
-                <p class="text-muted mb-0">Configure quantum transmission parameters, noise rates, and eavesdropping</p>
-            </div>
-            {% if not current_user.is_authenticated %}
-                <span class="badge bg-secondary-subtle text-secondary border px-3 py-2">
-                    <i class="bi bi-person-slash"></i> Guest Mode (Live In-Memory)
-                </span>
-            {% endif %}
-        </div>
-
-        {% if not current_user.is_authenticated %}
-        <div class="alert alert-info d-flex align-items-center mb-4 shadow-sm" role="alert">
-            <i class="bi bi-info-circle-fill fs-4 me-3 text-info"></i>
-            <div>
-                <strong>Zero-Friction Guest Session:</strong> You can run simulations and visualize quantum exchanges without an account.
-                <a href="{{ url_for('register') }}" class="alert-link">Create a free account</a> if you would like to persist your experiments in the session database.
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- 1-Click Preset Experiments -->
-        <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
-            <div class="card-body p-4">
-                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                    <h5 class="card-title mb-0 fw-bold">
-                        <i class="bi bi-lightning-charge-fill text-warning"></i> Preset Experiments (1-Click Test Scenarios)
-                    </h5>
-                    <span class="small text-muted">Click any preset to auto-configure the simulator:</span>
-                </div>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <button type="button" class="btn btn-outline-success w-100 text-start p-3 h-100 preset-btn"
-                                onclick="applyPreset(20, false, 0.0)">
-                            <div class="fw-bold mb-1"><i class="bi bi-check-circle-fill"></i> Preset 1: Ideal Channel</div>
-                            <small class="text-muted d-block">20 qubits, No Eve, Noise = 0.00</small>
-                            <span class="badge bg-success-subtle text-success mt-2">QBER &approx; 0% &bull; Key Secure</span>
-                        </button>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="button" class="btn btn-outline-danger w-100 text-start p-3 h-100 preset-btn"
-                                onclick="applyPreset(20, true, 0.0)">
-                            <div class="fw-bold mb-1"><i class="bi bi-shield-exclamation"></i> Preset 2: Eavesdropping</div>
-                            <small class="text-muted d-block">20 qubits, Eve active, Noise = 0.00</small>
-                            <span class="badge bg-danger-subtle text-danger mt-2">QBER &approx; 25% &bull; Compromised</span>
-                        </button>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="button" class="btn btn-outline-warning w-100 text-start p-3 h-100 preset-btn"
-                                onclick="applyPreset(20, false, 0.15)">
-                            <div class="fw-bold mb-1"><i class="bi bi-soundwave"></i> Preset 3: Noisy Channel</div>
-                            <small class="text-muted d-block">20 qubits, No Eve, Noise = 0.15</small>
-                            <span class="badge bg-warning-subtle text-warning mt-2">Decoherence &bull; QBER &gt; 11%</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Simulator Configuration Form -->
-        <div class="card shadow-sm border-0 mb-4 bg-body-tertiary">
-            <div class="card-body p-4">
-                <h5 class="card-title fw-bold mb-3">
-                    <i class="bi bi-sliders"></i> Simulation Parameters
-                </h5>
-                
-                <form method="POST" action="{{ url_for('simulator') }}" id="simulation-form">
-                    {{ form.hidden_tag() }}
-                    
-                    <div class="mb-4">
-                        <label for="key_length" class="form-label fw-semibold">
-                            {{ form.key_length.label.text }}
-                        </label>
-                        {{ form.key_length(class="form-control form-control-lg" + (" is-invalid" if form.key_length.errors else ""), id="key_length") }}
-                        {% if form.key_length.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.key_length.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <div class="form-text">
-                            Number of initial qubits prepared and transmitted by Alice (10 to 1,000 qubits).
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4 p-3 bg-body-secondary rounded-3 border">
-                        <div class="form-check form-switch fs-5">
-                            {{ form.has_eve(class="form-check-input", id="has_eve") }}
-                            <label class="form-check-label fw-semibold fs-6 pt-1" for="has_eve">
-                                {{ form.has_eve.label.text }}
-                            </label>
-                        </div>
-                        <div class="form-text mt-1">
-                            When active, Eve performs an intercept-resend attack in a random basis, collapsing qubit wave-functions and inducing an expected 25% QBER.
-                        </div>
-                    </div>
-
-                    <div class="mb-4 p-3 bg-body-secondary rounded-3 border">
-                        <label for="noise_rate" class="form-label fw-semibold">
-                            Channel Depolarizing Noise Rate ($\epsilon$)
-                        </label>
-                        <div class="row align-items-center g-2">
-                            <div class="col-8 col-sm-9">
-                                <input type="range" class="form-range" id="noise_range" min="0" max="0.5" step="0.01" value="{{ form.noise_rate.data or 0.0 }}" oninput="updateNoiseInput(this.value)">
-                            </div>
-                            <div class="col-4 col-sm-3">
-                                {{ form.noise_rate(class="form-control text-center fw-bold" + (" is-invalid" if form.noise_rate.errors else ""), id="noise_rate", step="0.01", min="0.0", max="1.0", oninput="updateNoiseRange(this.value)") }}
-                            </div>
-                        </div>
-                        {% if form.noise_rate.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.noise_rate.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                        <div class="form-text mt-2">
-                            Models realistic quantum channel decoherence via Qiskit Aer's <code>depolarizing_error</code> ($\mathcal{E}(\rho) = (1-\epsilon)\rho + \frac{\epsilon}{3}(X\rho X + Y\rho Y + Z\rho Z)$). Rates above 11% cause the Secret Key Rate to drop to zero.
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg shadow-sm py-3 fw-bold">
-                            <i class="bi bi-play-circle-fill me-2"></i> Run Quantum Simulation
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Theoretical Protocol Accordion -->
-        <div class="accordion shadow-sm" id="infoAccordion">
-            <div class="accordion-item border-0">
-                <h2 class="accordion-header">
-                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-                        <i class="bi bi-mortarboard-fill me-2 text-primary"></i> Understanding the BB84 Protocol & Security Bounds
-                    </button>
-                </h2>
-                <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#infoAccordion">
-                    <div class="accordion-body bg-light">
-                        <ol class="mb-0 small text-muted">
-                            <li class="mb-2"><strong>Alice encodes bits:</strong> Maps classical bits to qubits using $\{|0\rangle, |1\rangle\}$ (rectilinear) or $\{|+\rangle, |-\rangle\}$ (diagonal).</li>
-                            <li class="mb-2"><strong>Quantum channel:</strong> Qubits transit through the optical fiber or free space, subject to depolarizing noise $\epsilon$.</li>
-                            <li class="mb-2"><strong>Eavesdropping (Eve):</strong> Any measurement without knowledge of Alice's basis collapses the state, causing irreversible errors.</li>
-                            <li class="mb-2"><strong>Bob measures:</strong> Projects each qubit onto an independently chosen random basis.</li>
-                            <li class="mb-2"><strong>Basis reconciliation (Sifting):</strong> Alice and Bob discard bits with discordant bases over a classical channel.</li>
-                            <li class="mb-2"><strong>Parameter estimation:</strong> QBER is estimated from a random sample. If $\text{QBER} < 11\%$, privacy amplification extracts the secret key.</li>
-                            <li><strong>Asymptotic Secret Key Rate:</strong> $R \ge \max(0, 1 - 2h(\text{QBER}))$ under one-way classical error correction (Shor-Preskill / Devetak-Winter bound).</li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="container q-container">
+  <!-- Page header -->
+  <div class="q-page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div>
+      <span class="q-eyebrow"><span class="dot"></span>Experiment setup</span>
+      <h1>BB84 Protocol Simulator</h1>
+      <p class="q-sub mb-0">Configure the quantum channel, then run a full key exchange on Qiskit Aer.</p>
     </div>
+    {% if current_user.is_authenticated %}
+      <span class="q-chip q-chip-ok"><i class="bi bi-cloud-check"></i> Results saved to your history</span>
+    {% else %}
+      <span class="q-chip"><i class="bi bi-person-dash"></i> Guest mode · runs in memory</span>
+    {% endif %}
+  </div>
+
+  <div class="row g-4">
+    <!-- ================= Configuration ================= -->
+    <div class="col-lg-7">
+      <form method="POST" action="{{ url_for('simulator') }}" id="simulation-form" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="q-card mb-4">
+          <div class="q-card-hd">
+            <p class="q-card-title"><i class="bi bi-lightning-charge"></i> Quick presets</p>
+            <span class="small" style="color: var(--q-faint);">Loads parameters below</span>
+          </div>
+          <div class="p-3">
+            <div class="q-presets">
+              <button type="button" class="q-preset" data-n="128" data-eve="0" data-eps="0">
+                <strong><span class="q-status-dot" style="color: var(--q-ok);"></span>Ideal channel</strong>
+                <small>N=128 · Eve off · ε=0.00</small>
+              </button>
+              <button type="button" class="q-preset" data-n="128" data-eve="1" data-eps="0">
+                <strong><span class="q-status-dot" style="color: var(--q-eve);"></span>Eavesdropper</strong>
+                <small>N=128 · Eve on · ε=0.00</small>
+              </button>
+              <button type="button" class="q-preset" data-n="128" data-eve="0" data-eps="0.4">
+                <strong><span class="q-status-dot" style="color: var(--q-warn);"></span>Noisy channel</strong>
+                <small>N=128 · Eve off · ε=0.40</small>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="q-card mb-4">
+          <div class="q-card-hd">
+            <p class="q-card-title"><i class="bi bi-sliders2"></i> Parameters</p>
+          </div>
+
+          <!-- Key length -->
+          <div class="q-param">
+            <div class="q-param-head">
+              <div>
+                <h3><label for="key_length">Transmitted qubits <span class="q-mono" style="color: var(--q-muted); font-weight: 400;">N</span></label></h3>
+                <p>Photons Alice prepares and sends. Roughly half survive sifting.</p>
+              </div>
+              {{ form.key_length(class="form-control q-num-input" + (" is-invalid" if form.key_length.errors else ""), id="key_length", min="10", max="1000", step="1") }}
+            </div>
+            <input type="range" class="q-range" id="key_range" min="10" max="1000" step="1" value="{{ form.key_length.data or 64 }}" aria-label="Transmitted qubits">
+            <div class="q-range-ticks"><span>10</span><span>250</span><span>500</span><span>750</span><span>1000</span></div>
+            {% if form.key_length.errors %}
+              <div class="invalid-feedback d-block mt-2">{{ form.key_length.errors|join(' ') }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Eve -->
+          <div class="q-param">
+            <label class="q-toggle" for="has_eve" id="eve-toggle">
+              <span class="ico"><i class="bi bi-incognito"></i></span>
+              <span>
+                <strong>Eavesdropper (Eve)</strong>
+                <small>Intercept–resend attack on every photon, in a random basis.</small>
+              </span>
+              <span class="form-check form-switch">
+                {{ form.has_eve(class="form-check-input", id="has_eve", role="switch") }}
+              </span>
+            </label>
+          </div>
+
+          <!-- Noise -->
+          <div class="q-param">
+            <div class="q-param-head">
+              <div>
+                <h3><label for="noise_rate">Depolarizing noise <span class="q-mono" style="color: var(--q-muted); font-weight: 400;">ε</span></label></h3>
+                <p>Channel decoherence via Qiskit Aer <code>depolarizing_error(ε)</code>.</p>
+              </div>
+              {{ form.noise_rate(class="form-control q-num-input" + (" is-invalid" if form.noise_rate.errors else ""), id="noise_rate", step="0.01", min="0.0", max="1.0") }}
+            </div>
+            <input type="range" class="q-range" id="noise_range" min="0" max="0.5" step="0.01" value="{{ form.noise_rate.data or 0.0 }}" aria-label="Depolarizing noise">
+            <div class="q-range-ticks"><span>0.00</span><span>0.10</span><span>0.20</span><span>0.30</span><span>0.40</span><span>0.50</span></div>
+            {% if form.noise_rate.errors %}
+              <div class="invalid-feedback d-block mt-2">{{ form.noise_rate.errors|join(' ') }}</div>
+            {% endif %}
+          </div>
+
+          <div class="p-3 pt-2 px-4 pb-4">
+            <button type="submit" class="btn btn-q btn-q-lg w-100" id="run-btn">
+              <i class="bi bi-play-fill"></i> Run quantum simulation
+              <span class="q-mono ms-1" style="opacity: .55; font-size: .8rem;">↵</span>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      {% if not current_user.is_authenticated %}
+      <div class="q-callout mb-4">
+        <i class="bi bi-info-circle"></i>
+        <div>You're in guest mode — everything works, nothing is stored. <a href="{{ url_for('register') }}">Create a free account</a> to keep a history of your experiments.</div>
+      </div>
+      {% endif %}
+
+      <!-- Theory -->
+      <div class="accordion q-accordion" id="infoAccordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false">
+              <i class="bi bi-journal-text me-2" style="color: var(--q-muted);"></i> Protocol notes &amp; security bounds
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#infoAccordion">
+            <div class="accordion-body">
+              <ol class="q-theory-list">
+                <li><div><strong>Encoding.</strong> Alice maps random bits to $\{|0\rangle, |1\rangle\}$ (rectilinear) or $\{|+\rangle, |-\rangle\}$ (diagonal), chosen at random per photon.</div></li>
+                <li><div><strong>Channel noise.</strong> Qiskit's depolarizing channel $\mathcal{E}_\varepsilon(\rho) = (1-\varepsilon)\,\rho + \varepsilon\,\tfrac{I}{2}$ flips the measured bit with probability $\varepsilon/2$, so $\mathbb{E}[\text{QBER}] = \varepsilon/2$.</div></li>
+                <li><div><strong>Eavesdropping.</strong> Eve guesses the wrong basis half the time; each wrong guess randomizes Bob's result, giving $\mathbb{E}[\text{QBER}] = 25\%$ on an ideal channel.</div></li>
+                <li><div><strong>Sifting.</strong> Bases are compared publicly and mismatched positions are discarded — about half the qubits survive.</div></li>
+                <li><div><strong>Parameter estimation.</strong> A random sample of $\min(\lfloor n_s/4 \rfloor, 20)$ sifted bits is revealed to estimate the QBER, then discarded.</div></li>
+                <li><div><strong>Key rate.</strong> Under one-way post-processing (Shor–Preskill / Devetak–Winter) the secret fraction is $R = \max(0,\,1 - 2h(\text{QBER}))$, which vanishes at $\text{QBER} \approx 11\%$.</div></li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= Prediction panel ================= -->
+    <div class="col-lg-5">
+      <div class="q-card" style="position: sticky; top: 88px;">
+        <div class="q-card-hd">
+          <p class="q-card-title"><i class="bi bi-graph-up"></i> Theoretical forecast</p>
+          <span class="q-chip q-chip-mono" id="fc-config">N=64</span>
+        </div>
+        <div class="p-4">
+          <div class="d-flex justify-content-between align-items-end mb-3">
+            <div>
+              <div class="q-metric-k mb-2">Expected QBER</div>
+              <div class="q-big-num" id="fc-qber">0.0<small>%</small></div>
+            </div>
+            <div class="text-end">
+              <div class="q-metric-k mb-2 justify-content-end">Key rate R</div>
+              <div class="q-mono" style="font-size: 1.35rem; font-weight: 500;" id="fc-rate">1.000</div>
+            </div>
+          </div>
+
+          <div class="q-meter mb-4 pb-2" id="fc-meter">
+            <div class="q-meter-track">
+              <div class="q-meter-fill"></div>
+              <div class="q-meter-threshold" data-label="11% threshold"></div>
+            </div>
+          </div>
+
+          <svg id="fc-chart" class="w-100 mt-2" role="img" aria-label="Key rate curve with forecast marker"></svg>
+
+          <div class="mt-3">
+            <div class="q-predict-row"><span>Sifted bits (≈ N/2)</span><strong id="fc-sifted">32</strong></div>
+            <div class="q-predict-row"><span>QBER sample size</span><strong id="fc-sample">8</strong></div>
+            <div class="q-predict-row"><span>Expected final key</span><strong id="fc-final">24 bits</strong></div>
+          </div>
+
+          <div id="fc-verdict" class="q-verdict ok mt-3"><i class="bi bi-shield-check"></i><span>Secure key expected</span></div>
+          <p class="mt-3 mb-0" style="font-size: .76rem; color: var(--q-faint); line-height: 1.5;">
+            Forecast is the asymptotic expectation. Real runs estimate QBER on a finite sample, so small N can land on either side of the threshold.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-
-<script>
-function applyPreset(keyLength, hasEve, noiseRate) {
-    document.getElementById('key_length').value = keyLength;
-    document.getElementById('has_eve').checked = hasEve;
-    document.getElementById('noise_rate').value = noiseRate;
-    document.getElementById('noise_range').value = noiseRate;
-    
-    // Highlight the card slightly and scroll into view
-    const formCard = document.getElementById('simulation-form');
-    formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function updateNoiseInput(val) {
-    document.getElementById('noise_rate').value = parseFloat(val).toFixed(2);
-}
-
-function updateNoiseRange(val) {
-    const num = parseFloat(val) || 0.0;
-    document.getElementById('noise_range').value = num;
-}
-</script>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function () {
+  'use strict';
+  const keyInput = document.getElementById('key_length');
+  const keyRange = document.getElementById('key_range');
+  const eveInput = document.getElementById('has_eve');
+  const noiseInput = document.getElementById('noise_rate');
+  const noiseRange = document.getElementById('noise_range');
+  const eveToggle = document.getElementById('eve-toggle');
+  const presets = document.querySelectorAll('.q-preset');
+
+  const chart = QSec.keyRateChart(document.getElementById('fc-chart'), { height: 220, xMax: 0.3 });
+  const meter = document.querySelector('#fc-meter');
+  const meterFill = meter.querySelector('.q-meter-fill');
+  meter.querySelector('.q-meter-threshold').style.left = (QSec.THRESHOLD / 0.3 * 100) + '%';
+
+  function paintRange(r) {
+    const pct = (parseFloat(r.value) - parseFloat(r.min)) / (parseFloat(r.max) - parseFloat(r.min)) * 100;
+    r.style.setProperty('--fill', pct + '%');
+  }
+
+  function clamp(v, lo, hi) { return Math.min(Math.max(v, lo), hi); }
+
+  function update() {
+    const n = clamp(parseInt(keyInput.value, 10) || 0, 0, 1000);
+    const eps = clamp(parseFloat(noiseInput.value) || 0, 0, 1);
+    const eve = eveInput.checked;
+
+    eveToggle.classList.toggle('is-on', eve);
+    paintRange(keyRange); paintRange(noiseRange);
+
+    const q = QSec.expectedQber(eps, eve);
+    const r = QSec.keyRate(q);
+    const sifted = Math.floor(n / 2);
+    const sample = Math.min(Math.floor(sifted / 4), 20);
+    const finalBits = q < QSec.THRESHOLD ? Math.max(sifted - sample, 0) : 0;
+
+    document.getElementById('fc-qber').innerHTML = (q * 100).toFixed(1) + '<small>%</small>';
+    document.getElementById('fc-rate').textContent = r.toFixed(3);
+    document.getElementById('fc-sifted').textContent = sifted;
+    document.getElementById('fc-sample').textContent = sample + ' bits';
+    document.getElementById('fc-final').textContent = finalBits + ' bits';
+    document.getElementById('fc-config').textContent = 'N=' + n + (eve ? ' · Eve' : '') + ' · ε=' + eps.toFixed(2);
+
+    meterFill.style.width = Math.max(clamp(q / 0.3, 0, 1) * 100, 1.2) + '%';
+    meterFill.classList.toggle('is-bad', q >= QSec.THRESHOLD);
+    meterFill.classList.toggle('is-warn', q < QSec.THRESHOLD && q > 0.08);
+    chart.setPoint(q);
+
+    const v = document.getElementById('fc-verdict');
+    let cls = 'ok', icon = 'bi-shield-check', text = 'Secure key expected';
+    if (n < 10) { cls = 'warn'; icon = 'bi-exclamation-triangle'; text = 'Minimum is 10 qubits'; }
+    else if (q >= QSec.THRESHOLD) { cls = 'bad'; icon = 'bi-shield-x'; text = eve ? 'Eavesdropping should be detected — abort' : 'Noise above threshold — abort expected'; }
+    else if (q > 0.08) { cls = 'warn'; icon = 'bi-shield-exclamation'; text = 'Close to threshold — outcome may vary'; }
+    else if (sample < 5) { cls = 'warn'; icon = 'bi-info-circle'; text = 'Secure, but the QBER sample is very small'; }
+    v.className = 'q-verdict mt-3 ' + cls;
+    v.querySelector('i').className = 'bi ' + icon;
+    v.querySelector('span').textContent = text;
+
+    presets.forEach(function (p) {
+      const match = +p.dataset.n === n && (p.dataset.eve === '1') === eve && Math.abs(+p.dataset.eps - eps) < 1e-6;
+      p.classList.toggle('is-active', match);
+    });
+  }
+
+  keyRange.addEventListener('input', function () { keyInput.value = keyRange.value; update(); });
+  keyInput.addEventListener('input', function () { keyRange.value = clamp(parseInt(keyInput.value, 10) || 10, 10, 1000); update(); });
+  noiseRange.addEventListener('input', function () { noiseInput.value = parseFloat(noiseRange.value).toFixed(2); update(); });
+  noiseInput.addEventListener('input', function () { noiseRange.value = parseFloat(noiseInput.value) || 0; update(); });
+  eveInput.addEventListener('change', update);
+
+  presets.forEach(function (p) {
+    p.addEventListener('click', function () {
+      keyInput.value = p.dataset.n; keyRange.value = p.dataset.n;
+      eveInput.checked = p.dataset.eve === '1';
+      noiseInput.value = parseFloat(p.dataset.eps).toFixed(2); noiseRange.value = p.dataset.eps;
+      update();
+    });
+  });
+
+  document.getElementById('simulation-form').addEventListener('submit', function () {
+    const b = document.getElementById('run-btn');
+    b.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Preparing circuits…';
+    b.setAttribute('disabled', 'disabled');
+  });
+
+  noiseInput.value = (parseFloat(noiseInput.value) || 0).toFixed(2);
+  keyRange.value = keyInput.value || 64;
+  update();
+})();
+</script>
+{% endblock %}

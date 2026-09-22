@@ -1,179 +1,183 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Q-Sec{% endblock %} - BB84 Quantum Key Distribution Simulator</title>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <!-- KaTeX for Quantum Math Formulas -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    
-    {% block extra_css %}{% endblock %}
-    
+    <title>{% block title %}Q-Sec{% endblock %} · Q-Sec BB84 Quantum Key Distribution</title>
+    <meta name="description" content="Q-Sec — interactive BB84 quantum key distribution simulator built on IBM Qiskit Aer. Model eavesdropping, channel noise, QBER and secret key rate.">
+    <meta name="theme-color" content="#05070c">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2305070c'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%2322d3ee' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='9' ry='3.4' fill='none' stroke='%23a78bfa' stroke-width='1.5'/%3E%3Ccircle cx='21.5' cy='10.5' r='2.4' fill='%23fff'/%3E%3C/svg%3E">
+
+    <!-- Theme bootstrap (runs before paint to avoid flashes) -->
     <script>
-        (function() {
+        (function () {
             try {
-                const savedTheme = localStorage.getItem('qsec-theme');
-                const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const theme = savedTheme ? savedTheme : (systemPrefersDark ? 'dark' : 'light');
-                document.documentElement.setAttribute('data-bs-theme', theme);
+                var saved = localStorage.getItem('qsec-theme');
+                document.documentElement.setAttribute('data-bs-theme', saved === 'light' ? 'light' : 'dark');
             } catch (e) {}
         })();
     </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 (grid, utilities, collapse) + icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- KaTeX for protocol math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+            onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+    <!-- Design system -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/qsec.js') }}"></script>
+
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg qsec-navbar shadow-sm sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ url_for('home') }}">
-                <span class="brand-icon"><i class="bi bi-shield-lock-fill text-warning"></i></span>
-                <span class="brand-text">Q-Sec</span>
-            </a>
-            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center gap-1">
-                    <li class="nav-item">
-                        <a class="nav-link px-3 {% if request.endpoint == 'home' %}active{% endif %}" href="{{ url_for('home') }}">
-                            <i class="bi bi-house-door"></i> Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-3 {% if request.endpoint in ['simulator', 'animation'] %}active{% endif %}" href="{{ url_for('simulator') }}">
-                            <i class="bi bi-cpu"></i> Simulator
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-3 {% if request.endpoint in ['architecture', 'architecture_diagram'] %}active{% endif %}" href="{{ url_for('architecture') }}">
-                            <i class="bi bi-diagram-3"></i> Architecture
-                        </a>
-                    </li>
-                    {% if current_user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('history') }}">History</a>
-                        </li>
-                        <li class="nav-item">
-                            <span class="nav-link text-muted">
-                                <i class="bi bi-person-circle"></i> {{ current_user.username }}
-                            </span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-sm btn-outline-secondary ms-lg-2 px-3" href="{{ url_for('logout') }}">Log Out</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link px-3" href="{{ url_for('login') }}">Sign In</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="btn btn-sm btn-primary ms-lg-2 px-3 fw-semibold shadow-sm" href="{{ url_for('register') }}">Sign Up</a>
-                        </li>
-                    {% endif %}
-                    
-                    <!-- Dark / Light Mode Toggle -->
-                    <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
-                        <button id="theme-toggle" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 d-flex align-items-center gap-1.5" type="button" aria-label="Toggle theme" title="Toggle Light/Dark Theme">
-                            <i id="theme-icon" class="bi bi-moon-stars-fill"></i>
-                            <span id="theme-text" class="small">Dark</span>
-                        </button>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <!-- Navigation -->
+    <header class="q-nav">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container q-container">
+                <a class="q-brand" href="{{ url_for('home') }}" aria-label="Q-Sec home">
+                    <svg class="q-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="qMarkGrad" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0" stop-color="var(--q-alice)"/>
+                                <stop offset="1" stop-color="var(--q-bob)"/>
+                            </linearGradient>
+                        </defs>
+                        <rect x="0.5" y="0.5" width="31" height="31" rx="8.5" fill="var(--q-surface)" stroke="var(--q-border-strong)"/>
+                        <circle cx="16" cy="16" r="8.6" fill="none" stroke="url(#qMarkGrad)" stroke-width="1.8"/>
+                        <ellipse cx="16" cy="16" rx="8.6" ry="3.2" fill="none" stroke="var(--q-muted)" stroke-width="1" opacity="0.7"/>
+                        <line x1="16" y1="16" x2="21.6" y2="10.4" stroke="var(--q-text)" stroke-width="1.6" stroke-linecap="round"/>
+                        <circle cx="21.6" cy="10.4" r="2" fill="var(--q-text)"/>
+                    </svg>
+                    <span>Q-Sec</span>
+                    <span class="q-brand-tag d-none d-sm-inline">BB84</span>
+                </a>
 
-    <!-- Flash Messages -->
-    <div class="container mt-3">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mx-auto gap-lg-1">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'home' %}active{% endif %}" href="{{ url_for('home') }}">Overview</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint in ['simulator', 'animation'] %}active{% endif %}" href="{{ url_for('simulator') }}">Simulator</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint in ['architecture', 'architecture_diagram'] %}active{% endif %}" href="{{ url_for('architecture') }}">Architecture</a>
+                        </li>
+                        {% if current_user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'history' %}active{% endif %}" href="{{ url_for('history') }}">History</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+
+                    <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                        <button id="theme-toggle" class="q-icon-btn" type="button" aria-label="Toggle color theme" title="Toggle theme">
+                            <i id="theme-icon" class="bi bi-sun"></i>
+                        </button>
+                        {% if current_user.is_authenticated %}
+                            <span class="q-user-pill">
+                                <span class="q-avatar">{{ current_user.username[:1] }}</span>
+                                {{ current_user.username }}
+                            </span>
+                            <a class="btn btn-q-ghost btn-q-sm" href="{{ url_for('logout') }}">Log out</a>
+                        {% else %}
+                            <a class="btn btn-q-ghost btn-q-sm" href="{{ url_for('login') }}">Sign in</a>
+                            <a class="btn btn-q btn-q-sm" href="{{ url_for('register') }}">Create account</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Flash messages (toasts) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="q-flash-wrap" role="status" aria-live="polite">
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="q-flash {{ category }}">
+                        {% if category == 'success' %}<i class="bi bi-check-circle-fill"></i>
+                        {% elif category == 'danger' %}<i class="bi bi-x-circle-fill"></i>
+                        {% elif category == 'warning' %}<i class="bi bi-exclamation-triangle-fill"></i>
+                        {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+                        <span>{{ message }}</span>
+                        <button type="button" class="btn-close" aria-label="Close" onclick="this.parentElement.remove()"></button>
                     </div>
                 {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
+            </div>
+        {% endif %}
+    {% endwith %}
 
-    <!-- Main Content -->
-    <main class="container my-4">
+    <!-- Main content -->
+    <main>
         {% block content %}{% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="bg-light text-center text-muted py-4 mt-5 border-top">
-        <div class="container">
-            <p class="mb-1">
-                <i class="bi bi-atom text-primary"></i> <strong>Q-Sec</strong> - Interactive BB84 Quantum Key Distribution Simulator
-            </p>
-            <p class="small text-muted mb-2">
-                Presented at <em>CoNaIISI 2026</em> | Universidad Tecnológica Nacional, Facultad Regional Rosario (UTN FRRo)
-            </p>
-            <small>
-                <a href="https://www.linkedin.com/in/santino-cataldi/" target="_blank" class="text-decoration-none">Santino Cataldi</a> &bull; 
-                <a href="https://www.linkedin.com/in/lucio-nahuel-cosentino-6bb057215/" target="_blank" class="text-decoration-none">Lucio Cosentino</a> &bull; 
-                <a href="https://www.linkedin.com/in/gasparmartinez12/" target="_blank" class="text-decoration-none">Gaspar Martinez</a> &bull; 
-                <a href="https://www.linkedin.com/in/tomaswardoloff/" target="_blank" class="text-decoration-none">Tomás Wardoloff</a>
-            </small>
+    <footer class="q-footer">
+        <div class="container q-container">
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <a class="q-brand mb-2" href="{{ url_for('home') }}">
+                        <svg class="q-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+                            <rect x="0.5" y="0.5" width="31" height="31" rx="8.5" fill="var(--q-surface-2)" stroke="var(--q-border-strong)"/>
+                            <circle cx="16" cy="16" r="8.6" fill="none" stroke="url(#qMarkGrad)" stroke-width="1.8"/>
+                            <ellipse cx="16" cy="16" rx="8.6" ry="3.2" fill="none" stroke="var(--q-muted)" stroke-width="1" opacity="0.7"/>
+                            <line x1="16" y1="16" x2="21.6" y2="10.4" stroke="var(--q-text)" stroke-width="1.6" stroke-linecap="round"/>
+                            <circle cx="21.6" cy="10.4" r="2" fill="var(--q-text)"/>
+                        </svg>
+                        <span>Q-Sec</span>
+                    </a>
+                    <p class="mb-0 mt-2" style="max-width: 380px;">
+                        Interactive BB84 quantum key distribution simulator. Presented at
+                        <span class="text-nowrap" style="color: var(--q-text-2);">CoNaIISI 2026</span> ·
+                        UTN Facultad Regional Rosario.
+                    </p>
+                </div>
+                <div class="col-6 col-lg-3 offset-lg-1">
+                    <h6>Product</h6>
+                    <ul>
+                        <li><a href="{{ url_for('simulator') }}">Simulator</a></li>
+                        <li><a href="{{ url_for('animation', key_length=128, has_eve=1, noise_rate=0.0) }}">Live attack demo</a></li>
+                        <li><a href="{{ url_for('architecture') }}">System architecture</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <h6>Authors</h6>
+                    <ul>
+                        <li><a href="https://www.linkedin.com/in/santino-cataldi/" target="_blank" rel="noopener">Santino Cataldi</a></li>
+                        <li><a href="https://www.linkedin.com/in/lucio-nahuel-cosentino-6bb057215/" target="_blank" rel="noopener">Lucio Cosentino</a></li>
+                        <li><a href="https://www.linkedin.com/in/gasparmartinez12/" target="_blank" rel="noopener">Gaspar Martinez</a></li>
+                        <li><a href="https://www.linkedin.com/in/tomaswardoloff/" target="_blank" rel="noopener">Tomás Wardoloff</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="q-footer-bottom">
+                <span>© 2026 Q-Sec · MIT License</span>
+                <span class="q-mono">Flask · Qiskit 2.2 · Qiskit Aer 0.17</span>
+            </div>
         </div>
     </footer>
 
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Global Dark Mode Controller -->
-    <script>
-        function updateThemeUI(theme) {
-            const icon = document.getElementById('theme-icon');
-            const text = document.getElementById('theme-text');
-            if (!icon) return;
-            if (theme === 'dark') {
-                icon.className = 'bi bi-sun-fill text-warning';
-                if (text) text.textContent = 'Light';
-            } else {
-                icon.className = 'bi bi-moon-stars-fill';
-                if (text) text.textContent = 'Dark';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
-            updateThemeUI(currentTheme);
-
-            const toggleBtn = document.getElementById('theme-toggle');
-            if (toggleBtn) {
-                toggleBtn.addEventListener('click', function() {
-                    const activeTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
-                    const newTheme = activeTheme === 'dark' ? 'light' : 'dark';
-                    document.documentElement.setAttribute('data-bs-theme', newTheme);
-                    try {
-                        localStorage.setItem('qsec-theme', newTheme);
-                    } catch (e) {}
-                    updateThemeUI(newTheme);
-                });
-            }
-        });
-    </script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
-

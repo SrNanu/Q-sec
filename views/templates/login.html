@@ -1,67 +1,58 @@
 {% extends "base.html" %}
+{% from "_macros.html" import auth_side %}
 
 {% block title %}Sign In{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 col-lg-5 mx-auto">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4 p-md-5">
-                <h2 class="card-title text-center mb-4 fw-bold">
-                    <i class="bi bi-box-arrow-in-right text-primary"></i> Sign In
-                </h2>
-                
-                <form method="POST" action="{{ url_for('login') }}">
-                    {{ form.hidden_tag() }}
-                    
-                    <div class="mb-3">
-                        {{ form.username.label(class="form-label fw-semibold") }}
-                        {{ form.username(class="form-control form-control-lg" + (" is-invalid" if form.username.errors else ""), placeholder="Enter your username") }}
-                        {% if form.username.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.username.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label fw-semibold") }}
-                        {{ form.password(class="form-control form-control-lg" + (" is-invalid" if form.password.errors else ""), placeholder="Enter your password") }}
-                        {% if form.password.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.password.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-4 form-check">
-                        {{ form.remember_me(class="form-check-input") }}
-                        {{ form.remember_me.label(class="form-check-label") }}
-                    </div>
-                    
-                    <div class="d-grid mb-3">
-                        {{ form.submit(class="btn btn-primary btn-lg fw-bold") }}
-                    </div>
-                </form>
-                
-                <hr>
-                <div class="text-center">
-                    <p class="mb-2 text-muted">
-                        Don't have an account? 
-                        <a href="{{ url_for('register') }}" class="fw-semibold">Sign up here</a>
-                    </p>
-                    <p class="mb-0 small">
-                        Or explore immediately via 
-                        <a href="{{ url_for('simulator') }}" class="text-decoration-none fw-bold">Guest Simulator &rarr;</a>
-                    </p>
-                </div>
-            </div>
+<div class="container q-container q-auth">
+  <div class="q-card q-auth-card">
+    {{ auth_side('Pick up where your last key exchange left off.', [
+      'Full history of every BB84 run',
+      'QBER and key-rate trends on your dashboard',
+      'Same simulator — just persistent'
+    ]) }}
+
+    <div class="q-auth-form">
+      <h1>Sign in</h1>
+      <p class="q-sub mb-4">Welcome back. Enter your credentials to continue.</p>
+
+      <form method="POST" action="{{ url_for('login', next=request.args.get('next')) if request.args.get('next') else url_for('login') }}" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+          {{ form.username.label(class="form-label") }}
+          <div class="q-input-group">
+            <i class="bi bi-person"></i>
+            {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="your-username", autocomplete="username", autofocus=true) }}
+          </div>
+          {% if form.username.errors %}<div class="invalid-feedback d-block">{{ form.username.errors|join(' ') }}</div>{% endif %}
         </div>
+
+        <div class="mb-3">
+          {{ form.password.label(class="form-label") }}
+          <div class="q-input-group">
+            <i class="bi bi-lock"></i>
+            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="••••••••", autocomplete="current-password") }}
+          </div>
+          {% if form.password.errors %}<div class="invalid-feedback d-block">{{ form.password.errors|join(' ') }}</div>{% endif %}
+        </div>
+
+        <div class="form-check mb-4">
+          {{ form.remember_me(class="form-check-input") }}
+          {{ form.remember_me.label(class="form-check-label small", style="color: var(--q-text-2);") }}
+        </div>
+
+        <button type="submit" class="btn btn-q btn-q-lg w-100">Sign in <i class="bi bi-arrow-right kbd-arrow"></i></button>
+      </form>
+
+      <div class="q-divider">OR</div>
+
+      <a href="{{ url_for('simulator') }}" class="btn btn-q-ghost w-100 mb-4"><i class="bi bi-person-dash"></i> Continue as guest</a>
+
+      <p class="small text-center mb-0" style="color: var(--q-muted);">
+        Don't have an account? <a href="{{ url_for('register') }}" class="fw-medium">Create one</a>
+      </p>
     </div>
+  </div>
 </div>
 {% endblock %}
-

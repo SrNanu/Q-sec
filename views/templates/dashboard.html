@@ -1,162 +1,136 @@
 {% extends "base.html" %}
+{% from "_macros.html" import session_table, empty_state %}
 
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h2 class="mb-4 fw-bold">
-            <i class="bi bi-speedometer2 text-primary"></i> Dashboard: {{ current_user.username }}
-        </h2>
+<div class="container q-container">
+  <div class="q-page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div>
+      <span class="q-eyebrow"><span class="dot"></span>Dashboard</span>
+      <h1>Welcome back, {{ current_user.username }}</h1>
+      <p class="q-sub mb-0">An overview of your key-distribution experiments.</p>
     </div>
-</div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('history') }}" class="btn btn-q-ghost"><i class="bi bi-clock-history"></i> Full history</a>
+      <a href="{{ url_for('simulator') }}" class="btn btn-q"><i class="bi bi-plus-lg"></i> New simulation</a>
+    </div>
+  </div>
 
-<!-- Aggregated Metrics -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card text-center bg-primary text-white border-0 shadow-sm">
-            <div class="card-body py-4">
-                <i class="bi bi-collection fs-1"></i>
-                <h3 class="mt-2 fw-bold">{{ stats.total_simulations }}</h3>
-                <p class="mb-0 text-white-50">Total Experiments</p>
-            </div>
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="q-card q-kpi">
+        <div class="q-kpi-top">
+          <span class="q-metric-k">Experiments</span>
+          <span class="ico" style="background: var(--q-alice-soft); color: var(--q-alice);"><i class="bi bi-collection"></i></span>
         </div>
+        <div class="q-kpi-v" data-count="{{ stats.total_simulations }}">{{ stats.total_simulations }}</div>
+        <div class="q-kpi-k">Total runs recorded</div>
+      </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-success text-white border-0 shadow-sm">
-            <div class="card-body py-4">
-                <i class="bi bi-shield-check fs-1"></i>
-                <h3 class="mt-2 fw-bold">{{ stats.secure_simulations }}</h3>
-                <p class="mb-0 text-white-50">Secure Keys</p>
-            </div>
+    <div class="col-6 col-lg-3">
+      <div class="q-card q-kpi">
+        <div class="q-kpi-top">
+          <span class="q-metric-k">Secure</span>
+          <span class="ico" style="background: var(--q-ok-soft); color: var(--q-ok);"><i class="bi bi-shield-check"></i></span>
         </div>
+        <div class="q-kpi-v" data-count="{{ stats.secure_simulations }}">{{ stats.secure_simulations }}</div>
+        <div class="q-kpi-k">Keys distilled</div>
+      </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-danger text-white border-0 shadow-sm">
-            <div class="card-body py-4">
-                <i class="bi bi-shield-x fs-1"></i>
-                <h3 class="mt-2 fw-bold">{{ stats.compromised_simulations }}</h3>
-                <p class="mb-0 text-white-50">Compromised / Aborted</p>
-            </div>
+    <div class="col-6 col-lg-3">
+      <div class="q-card q-kpi">
+        <div class="q-kpi-top">
+          <span class="q-metric-k">Aborted</span>
+          <span class="ico" style="background: var(--q-eve-soft); color: var(--q-eve);"><i class="bi bi-shield-x"></i></span>
         </div>
+        <div class="q-kpi-v" data-count="{{ stats.compromised_simulations }}">{{ stats.compromised_simulations }}</div>
+        <div class="q-kpi-k">Attack or noise detected</div>
+      </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center bg-info text-white border-0 shadow-sm">
-            <div class="card-body py-4">
-                <i class="bi bi-percent fs-1"></i>
-                <h3 class="mt-2 fw-bold">{{ stats.success_rate }}%</h3>
-                <p class="mb-0 text-white-50">Success Rate</p>
-            </div>
+    <div class="col-6 col-lg-3">
+      <div class="q-card q-kpi">
+        <div class="q-kpi-top">
+          <span class="q-metric-k">Success rate</span>
+          <span class="ico" style="background: var(--q-bob-soft); color: var(--q-bob);"><i class="bi bi-percent"></i></span>
         </div>
+        <div class="q-kpi-v"><span data-count="{{ stats.success_rate }}" data-decimals="1">{{ stats.success_rate }}</span><span style="font-size: 1.2rem; color: var(--q-muted);">%</span></div>
+        <div class="q-meter mt-2">
+          <div class="q-meter-track" style="height: 5px;"><div class="q-meter-fill" data-width="{{ stats.success_rate }}"></div></div>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Quick Actions -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-3">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <h5 class="card-title mb-0 fw-semibold">Quick Actions</h5>
-                    <div class="d-flex gap-2">
-                        <a href="{{ url_for('simulator') }}" class="btn btn-primary">
-                            <i class="bi bi-play-circle me-1"></i> New Simulation
-                        </a>
-                        <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-clock-history me-1"></i> View Full History
-                        </a>
-                    </div>
-                </div>
-            </div>
+  <div class="row g-4">
+    <!-- Recent QBER -->
+    <div class="col-lg-4">
+      <div class="q-card h-100">
+        <div class="q-card-hd"><p class="q-card-title"><i class="bi bi-bar-chart"></i> QBER · last runs</p></div>
+        <div class="p-4">
+          {% if recent_sessions %}
+            <svg id="qber-bars" class="q-chart w-100" role="img" aria-label="QBER of recent runs"></svg>
+            <p class="small mt-3 mb-0" style="color: var(--q-muted);">Dashed line marks the 11% abort threshold.</p>
+          {% else %}
+            <p class="small mb-0" style="color: var(--q-muted);">Your QBER trend will appear here after your first run.</p>
+          {% endif %}
         </div>
+      </div>
     </div>
-</div>
 
-<!-- Recent Simulations -->
-<div class="row">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-light py-3">
-                <h5 class="mb-0 fw-bold">
-                    <i class="bi bi-clock-history text-primary me-1"></i> Recent Simulations
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if recent_sessions %}
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Session ID</th>
-                                    <th>Timestamp (UTC)</th>
-                                    <th>Qubits</th>
-                                    <th>Eve</th>
-                                    <th>Noise</th>
-                                    <th>Result</th>
-                                    <th>QBER</th>
-                                    <th>Secret Key Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for session in recent_sessions %}
-                                <tr>
-                                    <td><strong>#{{ session.id }}</strong></td>
-                                    <td class="small text-muted">{{ session.timestamp }}</td>
-                                    <td>{{ session.key_length }} qubits</td>
-                                    <td>
-                                        {% if session.has_eve %}
-                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Active</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary-subtle text-secondary border">None</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if session.noise_rate %}
-                                            {{ "%.1f"|format(session.noise_rate * 100) }}%
-                                        {% else %}
-                                            0.0%
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if session.result == 'secure' %}
-                                            <span class="badge bg-success">Secure</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Compromised</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if session.error_rate is not none %}
-                                            <span class="{% if session.error_rate >= 0.11 %}text-danger fw-bold{% else %}text-success fw-semibold{% endif %}">
-                                                {{ "%.2f"|format(session.error_rate * 100) }}%
-                                            </span>
-                                        {% else %}
-                                            N/A
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if session.secret_key_rate is not none %}
-                                            <span class="badge bg-primary-subtle text-primary border">
-                                                R = {{ "%.3f"|format(session.secret_key_rate) }}
-                                            </span>
-                                        {% else %}
-                                            <span class="text-muted">-</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="alert alert-info mb-0">
-                        <i class="bi bi-info-circle me-1"></i> 
-                        No experiments logged yet. 
-                        <a href="{{ url_for('simulator') }}" class="alert-link">Run your first simulation!</a>
-                    </div>
-                {% endif %}
-            </div>
+    <!-- Recent table -->
+    <div class="col-lg-8">
+      <div class="q-card h-100" style="overflow: hidden;">
+        <div class="q-card-hd">
+          <p class="q-card-title"><i class="bi bi-clock-history"></i> Recent simulations</p>
+          {% if recent_sessions %}<a href="{{ url_for('history') }}" class="small">View all <i class="bi bi-arrow-right-short"></i></a>{% endif %}
         </div>
+        {% if recent_sessions %}
+          {{ session_table(recent_sessions, compact=True) }}
+        {% else %}
+          {{ empty_state('No experiments yet', 'Run your first BB84 exchange and it will show up here.') }}
+        {% endif %}
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+(function () {
+  document.querySelectorAll('[data-count]').forEach(function (n) {
+    QSec.countUp(n, parseFloat(n.dataset.count) || 0, { decimals: parseInt(n.dataset.decimals || 0, 10) });
+  });
+  document.querySelectorAll('.q-meter-fill[data-width]').forEach(function (f) {
+    setTimeout(function () { f.style.width = f.dataset.width + '%'; f.style.background = 'var(--q-bob)'; }, 200);
+  });
+
+  const svg = document.getElementById('qber-bars');
+  if (!svg) return;
+  const runs = {{ recent_sessions|tojson }}.slice().reverse();
+  const W = 320, H = 200, m = { t: 12, r: 8, b: 26, l: 34 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const max = Math.ceil(Math.max(0.3, ...runs.map(function (r) { return r.error_rate || 0; })) * 10) / 10;
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+  const y = function (v) { return m.t + ih - (v / max) * ih; };
+  [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6].forEach(function (v) {
+    if (v > max + 1e-9) return;
+    QSec.svgEl('line', { class: 'grid', x1: m.l, x2: W - m.r, y1: y(v), y2: y(v) }, svg);
+    QSec.svgEl('text', { class: 'tick', x: m.l - 6, y: y(v) + 3, 'text-anchor': 'end' }, svg).textContent = Math.round(v * 100) + '%';
+  });
+  const bw = iw / runs.length;
+  runs.forEach(function (r, i) {
+    const q = r.error_rate || 0;
+    const x = m.l + i * bw + bw * 0.22, w = bw * 0.56;
+    const rect = QSec.svgEl('rect', { x: x, y: y(0), width: w, height: 0, rx: 4,
+      fill: r.result === 'secure' ? 'var(--q-ok)' : 'var(--q-eve)', opacity: 0.9 }, svg);
+    rect.style.transition = 'all .8s cubic-bezier(.22,1,.36,1) ' + (i * 0.08) + 's';
+    setTimeout(function () { rect.setAttribute('y', y(q)); rect.setAttribute('height', Math.max(ih - (y(q) - m.t), 1.5)); }, 50);
+    QSec.svgEl('text', { class: 'tick', x: x + w / 2, y: H - 8, 'text-anchor': 'middle' }, svg).textContent = '#' + r.id;
+  });
+  QSec.svgEl('line', { class: 'thresh', x1: m.l, x2: W - m.r, y1: y(0.11), y2: y(0.11) }, svg);
+})();
+</script>
+{% endblock %}

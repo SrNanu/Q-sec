@@ -1,116 +1,80 @@
 {% extends "base.html" %}
 
-{% block title %}System Architecture - Q-Sec{% endblock %}
+{% block title %}System Architecture{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-lg-4 py-3">
-    <!-- Header Section -->
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
-        <div>
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1.5 rounded-pill">
-                    <i class="bi bi-diagram-3"></i> 3-Layer Architecture
-                </span>
-                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5 py-1.5 rounded-pill">
-                    Archify Interactive Artifact
-                </span>
-            </div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-diagram-3-fill text-primary"></i> System Architecture
-            </h2>
-            <p class="text-muted mb-0">
-                Interactive component topology, quantum simulation pipeline, and data layer based on the actual codebase.
-            </p>
-        </div>
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            <a href="{{ url_for('architecture_diagram') }}" target="_blank" class="btn btn-outline-primary shadow-sm">
-                <i class="bi bi-arrows-fullscreen"></i> Open Fullscreen
-            </a>
-            <a href="{{ url_for('simulator') }}" class="btn btn-primary shadow-sm">
-                <i class="bi bi-cpu"></i> Launch Simulator
-            </a>
-        </div>
+<div class="container q-container">
+  <div class="q-page-head d-flex flex-wrap justify-content-between align-items-end gap-3">
+    <div>
+      <span class="q-eyebrow"><span class="dot" style="background: var(--q-bob); box-shadow: 0 0 0 3px var(--q-bob-soft);"></span>Engineering</span>
+      <h1>System Architecture</h1>
+      <p class="q-sub mb-0" style="max-width: 640px;">Component topology, quantum simulation pipeline and data layer — generated from the actual codebase. Pan, zoom and click any node to inspect it.</p>
     </div>
-
-    <!-- Interactive Diagram Container -->
-    <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; overflow: hidden;">
-        <div class="card-header bg-dark text-white py-2 px-3 d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2 small">
-                <span class="spinner-grow spinner-grow-sm text-success" role="status"></span>
-                <span>Interactive Diagram • Pan, zoom, click nodes to inspect, or select Guided Views</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <a href="{{ url_for('architecture_diagram') }}" target="_blank" class="btn btn-sm btn-outline-light py-0 px-2" title="Open in new window">
-                    <i class="bi bi-box-arrow-up-right"></i> Standalone
-                </a>
-            </div>
-        </div>
-        <div class="card-body p-0" style="background-color: #111827;">
-            <iframe 
-                src="{{ url_for('architecture_diagram') }}" 
-                title="Q-Sec Architecture Diagram"
-                width="100%" 
-                style="height: 82vh; min-height: 840px; border: none; display: block;"
-                loading="lazy">
-            </iframe>
-        </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{{ url_for('architecture_diagram') }}" target="_blank" rel="noopener" class="btn btn-q-ghost"><i class="bi bi-arrows-fullscreen"></i> Fullscreen</a>
+      <a href="{{ url_for('simulator') }}" class="btn btn-q"><i class="bi bi-play-fill"></i> Launch simulator</a>
     </div>
+  </div>
 
-    <!-- Architecture Insights & Layer Breakdown -->
-    <div class="row g-3">
-        <div class="col-lg-4">
-            <div class="card h-100 border-0 shadow-sm" style="border-radius: 10px; border-top: 4px solid #0dcaf0 !important;">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-2">
-                        <i class="bi bi-window-sidebar text-info"></i> 1. Presentation Tier
-                    </h5>
-                    <p class="text-muted small mb-3">
-                        Encapsulated in <code>views/</code>. Dispatches user requests, handles session cookies, and renders real-time visual feedback.
-                    </p>
-                    <ul class="small ps-3 text-secondary mb-0">
-                        <li><strong>Zero-Friction Guest Mode</strong>: Run experiments directly without account barrier.</li>
-                        <li><strong>REST API</strong>: <code>POST /api/run-simulation</code> returns JSON with qubit traces.</li>
-                        <li><strong>SVG Photon Visualizer</strong>: Synchronized animation of states, polarization, and attacks.</li>
-                    </ul>
-                </div>
-            </div>
+  <!-- Layers -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-4">
+      <div class="q-card q-tier">
+        <div class="q-tier-top">
+          <span class="ico" style="background: var(--q-alice-soft); color: var(--q-alice);"><i class="bi bi-window"></i></span>
+          <div><div class="q-metric-k">Tier 1 · <code>views/</code></div><h3>Presentation</h3></div>
         </div>
-
-        <div class="col-lg-4">
-            <div class="card h-100 border-0 shadow-sm" style="border-radius: 10px; border-top: 4px solid #6f42c1 !important;">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-2">
-                        <i class="bi bi-cpu text-purple" style="color: #6f42c1;"></i> 2. Quantum Domain Tier
-                    </h5>
-                    <p class="text-muted small mb-3">
-                        Encapsulated in <code>business/</code>. Contains physical quantum protocol modeling, noise simulation, and metrics.
-                    </p>
-                    <ul class="small ps-3 text-secondary mb-0">
-                        <li><strong>Qiskit Circuit Prep</strong>: Single-qubit circuits in rectilinear ($Z$) and diagonal ($X$) bases.</li>
-                        <li><strong>Depolarizing Channel</strong>: NoiseModel simulating optical loss and decoherence.</li>
-                        <li><strong>Devetak-Winter Key Rate</strong>: $R_\infty = \max(0, 1 - 2h(\text{QBER}))$ with 11% cutoff.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card h-100 border-0 shadow-sm" style="border-radius: 10px; border-top: 4px solid #198754 !important;">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-2">
-                        <i class="bi bi-database text-success"></i> 3. Data & Migrations Tier
-                    </h5>
-                    <p class="text-muted small mb-3">
-                        Encapsulated in <code>datos/</code>. Clean repository pattern abstracting SQLite/PostgreSQL persistence and schema evolution.
-                    </p>
-                    <ul class="small ps-3 text-secondary mb-0">
-                        <li><strong>Repository Pattern</strong>: <code>session_repository.py</code> and <code>user_repository.py</code>.</li>
-                        <li><strong>Runtime Schema Migrator</strong>: <code>datos/esquema.py</code> adds missing columns dynamically.</li>
-                        <li><strong>Audit Log</strong>: Tracks noise rates, sample sizes, QBER, and secret key rates.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+        <p class="q-sub small mb-0">Dispatches requests, manages sessions and renders the real-time protocol visualization.</p>
+        <ul>
+          <li><span><strong>Guest mode</strong> — full simulator with zero sign-up.</span></li>
+          <li><span><strong>REST API</strong> — <code>POST /api/run-simulation</code> returns per-qubit traces as JSON.</span></li>
+          <li><span><strong>SVG photon engine</strong> — polarization states, interception and sifting animated from real data.</span></li>
+        </ul>
+      </div>
     </div>
+    <div class="col-lg-4">
+      <div class="q-card q-tier">
+        <div class="q-tier-top">
+          <span class="ico" style="background: var(--q-bob-soft); color: var(--q-bob);"><i class="bi bi-cpu"></i></span>
+          <div><div class="q-metric-k">Tier 2 · <code>business/</code></div><h3>Quantum domain</h3></div>
+        </div>
+        <p class="q-sub small mb-0">Framework-independent protocol model: circuits, noise, attack and security metrics.</p>
+        <ul>
+          <li><span><strong>Qiskit circuits</strong> — single-qubit preparation in $Z$ and $X$ bases.</span></li>
+          <li><span><strong>Aer noise model</strong> — depolarizing channel for fiber decoherence.</span></li>
+          <li><span><strong>Key rate</strong> — $R = \max(0, 1 - 2h(\text{QBER}))$ with 11% cutoff.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="q-card q-tier">
+        <div class="q-tier-top">
+          <span class="ico" style="background: var(--q-ok-soft); color: var(--q-ok);"><i class="bi bi-database"></i></span>
+          <div><div class="q-metric-k">Tier 3 · <code>datos/</code></div><h3>Data &amp; migrations</h3></div>
+        </div>
+        <p class="q-sub small mb-0">Repository pattern over SQLAlchemy — SQLite locally, PostgreSQL in production.</p>
+        <ul>
+          <li><span><strong>Repositories</strong> — <code>session_repository</code>, <code>user_repository</code>.</span></li>
+          <li><span><strong>Schema evolution</strong> — <code>esquema.py</code> adds missing columns idempotently.</span></li>
+          <li><span><strong>Audit trail</strong> — noise, sample size, QBER and key rate per run.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diagram -->
+  <div class="q-card q-frame">
+    <div class="q-frame-bar">
+      <span class="dots"><i></i><i></i><i></i></span>
+      <span class="q-frame-url d-none d-md-inline">/architecture/diagram</span>
+      <a href="{{ url_for('architecture_diagram') }}" target="_blank" rel="noopener" class="small"><i class="bi bi-box-arrow-up-right"></i> Open standalone</a>
+    </div>
+    <iframe
+      src="{{ url_for('architecture_diagram') }}"
+      title="Q-Sec architecture diagram"
+      width="100%"
+      style="height: 80vh; min-height: 720px; border: 0; display: block; background: #0b0f17;"
+      loading="lazy"></iframe>
+  </div>
 </div>
 {% endblock %}

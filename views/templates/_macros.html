@@ -1,0 +1,105 @@
+{# Shared UI macros #}
+
+{% macro session_table(sessions, show_key=False, compact=False) %}
+<div class="table-responsive">
+  <table class="q-table">
+    <thead>
+      <tr>
+        <th>Session</th>
+        {% if not compact %}<th>Timestamp (UTC)</th>{% endif %}
+        <th>Qubits</th>
+        <th>Eve</th>
+        <th>Noise <span style="text-transform:none">ε</span></th>
+        <th>Result</th>
+        <th>QBER</th>
+        <th>Key rate R</th>
+        {% if show_key %}<th>Final key</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for session in sessions %}
+      <tr data-result="{{ session.result }}">
+        <td class="id">#{{ session.id }}</td>
+        {% if not compact %}<td class="num" style="color: var(--q-muted);">{{ session.timestamp }}</td>{% endif %}
+        <td class="num">{{ session.key_length }}</td>
+        <td>
+          {% if session.has_eve %}
+            <span class="q-chip q-chip-eve"><i class="bi bi-incognito"></i> Active</span>
+          {% else %}
+            <span class="q-chip">None</span>
+          {% endif %}
+        </td>
+        <td class="num">{{ "%.2f"|format(session.noise_rate or 0.0) }}</td>
+        <td>
+          {% if session.result == 'secure' %}
+            <span class="q-chip q-chip-ok"><span class="q-status-dot"></span> Secure</span>
+          {% else %}
+            <span class="q-chip q-chip-eve"><span class="q-status-dot"></span> Aborted</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if session.error_rate is not none %}
+            {% set q = session.error_rate %}
+            <span class="q-mini-bar">
+              <span class="track"><span class="fill {% if q >= 0.11 %}bad{% endif %}" style="width: {{ [q / 0.4 * 100, 100]|min }}%;"></span></span>
+              <span class="num" style="color: {% if q >= 0.11 %}var(--q-eve){% else %}var(--q-text){% endif %};">{{ "%.2f"|format(q * 100) }}%</span>
+            </span>
+          {% else %}
+            <span style="color: var(--q-faint);">—</span>
+          {% endif %}
+        </td>
+        <td class="num">
+          {% if session.secret_key_rate is not none %}{{ "%.3f"|format(session.secret_key_rate) }}{% else %}<span style="color: var(--q-faint);">—</span>{% endif %}
+        </td>
+        {% if show_key %}
+        <td>
+          {% if session.final_key %}
+            <code>{{ session.final_key[:20] }}{% if session.final_key|length > 20 %}…{% endif %}</code>
+          {% else %}
+            <span style="color: var(--q-faint); font-size: .8rem;">none · aborted</span>
+          {% endif %}
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endmacro %}
+
+{% macro empty_state(title, text) %}
+<div class="q-empty">
+  <div class="ico"><i class="bi bi-inboxes"></i></div>
+  <h3>{{ title }}</h3>
+  <p>{{ text }}</p>
+  <a href="{{ url_for('simulator') }}" class="btn btn-q"><i class="bi bi-play-fill"></i> Run a simulation</a>
+</div>
+{% endmacro %}
+
+{% macro auth_side(title, points) %}
+<aside class="q-auth-side">
+  <div>
+    <span class="q-eyebrow mb-3"><span class="dot"></span>Q-Sec</span>
+    <h2 class="mt-3 mb-4">{{ title }}</h2>
+    <ul>
+      {% for p in points %}
+      <li><i class="bi bi-check2"></i><span>{{ p }}</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+  <svg viewBox="0 0 320 80" aria-hidden="true" style="width: 100%; max-width: 320px;">
+    <line x1="24" y1="40" x2="296" y2="40" stroke="var(--q-border-strong)" stroke-width="1.5"/>
+    <line x1="24" y1="40" x2="296" y2="40" stroke="var(--q-alice)" stroke-width="1.5" stroke-dasharray="2 9" opacity=".6">
+      <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="1.2s" repeatCount="indefinite"/>
+    </line>
+    <circle cx="24" cy="40" r="12" fill="var(--q-surface)" stroke="var(--q-alice)" stroke-width="1.5"/>
+    <circle cx="296" cy="40" r="12" fill="var(--q-surface)" stroke="var(--q-bob)" stroke-width="1.5"/>
+    {% for x, a in [(90, 0), (140, 45), (190, 90), (240, 135)] %}
+    <g transform="translate({{ x }} 40)">
+      <circle r="8" fill="var(--q-surface)" stroke="var(--q-border-strong)"/>
+      <line x1="-4.5" y1="0" x2="4.5" y2="0" stroke="var(--q-text)" stroke-width="1.5" stroke-linecap="round" transform="rotate({{ -a }})"/>
+    </g>
+    {% endfor %}
+  </svg>
+</aside>
+{% endmacro %}
