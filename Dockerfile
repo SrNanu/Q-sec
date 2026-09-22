@@ -66,8 +66,8 @@ USER qsec
 EXPOSE 5000
 
 # Verificación de salud (Healthcheck)
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-5000}/ || exit 1
 
 # Entrypoint y comando por defecto
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
