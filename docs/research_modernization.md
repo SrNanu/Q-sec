@@ -31,7 +31,7 @@ Este documento registra los cambios introducidos en la plataforma **Q-Sec** para
 ### 1.3 Animación SVG y Frontend (`views/templates/`, `views/forms.py`)
 - **Internacionalización (English-First UI)**:
   - Traducción al inglés técnico formal en navegación, formularios de simulación, panel de métricas, alertas y pie de página.
-  - Reconocimiento académico al desarrollo en UTN FRRo y citación al paper presentado en CoNaIISI 2026.
+  - Reconocimiento académico al desarrollo en UTN FRRo y citación al paper enviado en CoNaIISI 2026.
 - **Optimización y Sincronización de Animación de Fotones**:
   - Se vinculó el bucle SVG de transmisión al tamaño del lote representativo en pantalla (`Math.min(16, qubits)`), resolviendo el cuello de botella que congelaba el navegador al simular longitudes de 256 o 512 bits.
   - Animación de desvío e intercepción de fotones en presencia de Eve hacia el detector inferior con efectos de resplandor.

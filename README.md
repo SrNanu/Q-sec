@@ -28,7 +28,7 @@
 
 **Q-Sec** is an open-source, research-grade web simulation platform for **Quantum Key Distribution (QKD)** adhering to the **Bennett-Brassard 1984 (BB84)** protocol. Built with **IBM Qiskit 2.2**, **Qiskit-Aer**, and **Flask**, Q-Sec models real-time quantum circuit construction, single-photon quantum state preparation across conjugate non-orthogonal bases, environmental quantum channel decoherence, and active adversarial interception (Eve).
 
-Developed to bridge foundational quantum physics with modern cryptographic network engineering, Q-Sec computes rigorous quantum information-theoretic metrics—including **Shannon binary entropy** and the **asymptotic Secret Key Rate** under one-way classical post-processing ($R \ge 1 - 2h(\text{QBER})$). The platform was peer-reviewed and presented at the **National Conference on Information Engineering and Information Systems (CoNaIISI 2026)**.
+Developed to bridge foundational quantum physics with modern cryptographic network engineering, Q-Sec computes rigorous quantum information-theoretic metrics—including **Shannon binary entropy** and the **asymptotic Secret Key Rate** under one-way classical post-processing ($R \ge 1 - 2h(\text{QBER})$). The platform was peer-reviewed and submitted at the **National Conference on Information Engineering and Information Systems (CoNaIISI 2026)**.
 
 ---
 
