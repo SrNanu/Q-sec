@@ -176,4 +176,3 @@ def configure_routes(app):
         """Serves the standalone Archify interactive diagram artifact"""
         docs_dir = os.path.join(app.root_path, 'docs')
         return send_from_directory(docs_dir, 'architecture.html')
-

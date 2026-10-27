@@ -59,4 +59,3 @@ class SimulationForm(FlaskForm):
         default=0.0
     )
     submit = SubmitField('Run Simulation')
-

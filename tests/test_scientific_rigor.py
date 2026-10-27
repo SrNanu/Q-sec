@@ -117,4 +117,3 @@ class TestGuestModeZeroFriction:
         assert resp.status_code == 200
         assert b'<!DOCTYPE html>' in resp.data
         assert b'Q-Sec' in resp.data
-
